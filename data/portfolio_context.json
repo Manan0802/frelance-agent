@@ -1,0 +1,60 @@
+{
+  "personal": {
+    "name": "Manan",
+    "title": "AI Engineer & Full-Stack Developer",
+    "location": "New Delhi, India",
+    "education": "B.Tech Software Engineering, DTU (Delhi Technological University)",
+    "current_role": "Software Engineer (Full-Time)",
+    "years_experience": 1,
+    "tagline": "I build AI agents and full-stack applications that solve real business problems"
+  },
+  "skills": {
+    "ai_ml": ["LangGraph", "LangChain", "RAG pipelines", "Multi-agent systems", "FinBERT", "sentence-transformers", "OpenAI API", "Groq", "Gemini API", "HuggingFace", "ChromaDB", "Pinecone", "vector databases"],
+    "full_stack": ["React", "Node.js", "Express", "MongoDB", "FastAPI", "Python", "REST APIs", "WebSockets", "Next.js"],
+    "data": ["Pandas", "NumPy", "Matplotlib", "Data preprocessing", "EDA"],
+    "tools": ["Git", "Docker", "Railway", "Vercel", "Supabase", "Playwright"]
+  },
+  "projects": [
+    {
+      "name": "SARA",
+      "type": "ai_ml",
+      "description": "LangGraph-based multi-agent system built during AI Engineering internship at IndiaMART. Handles complex multi-step workflows with agent routing and state management.",
+      "tech": ["LangGraph", "Python", "Groq", "RAG"],
+      "pitch_for": ["AI agent", "LangGraph", "multi-agent", "automation", "agentic AI"],
+      "url": null
+    },
+    {
+      "name": "Client Website (CodewellImages)",
+      "type": "full_stack",
+      "description": "Built a live business website for a professional photography client. Clean, responsive, production-deployed.",
+      "tech": ["React", "Node.js"],
+      "pitch_for": ["website", "web development", "business site", "portfolio site"],
+      "url": "https://codewellimages.in"
+    },
+    {
+      "name": "InvestMate",
+      "type": "fintech",
+      "description": "MERN stack + Gemini AI portfolio tracker with AI-powered investment insights.",
+      "tech": ["MongoDB", "Express", "React", "Node.js", "Gemini API"],
+      "pitch_for": ["fintech", "investment app", "portfolio tracker", "MERN", "financial dashboard"],
+      "url": null
+    },
+    {
+      "name": "ShopLens",
+      "type": "ai_ml",
+      "description": "Visual product search engine using CLIP + FAISS for similarity search.",
+      "tech": ["CLIP", "FAISS", "Python", "computer vision"],
+      "pitch_for": ["computer vision", "image search", "e-commerce AI", "similarity search"],
+      "url": null
+    },
+    {
+      "name": "Bachatt",
+      "type": "fintech",
+      "description": "Personal finance platform using Sarvam-2B (Indian multilingual AI) for financial guidance in Hindi/English.",
+      "tech": ["Sarvam-2B", "Qwen", "FastAPI", "React"],
+      "pitch_for": ["fintech", "multilingual AI", "Indian market", "personal finance"],
+      "url": "https://bachatt.app"
+    }
+  ],
+  "availability": "10-15 hours per week (alongside full-time job)"
+}

@@ -1,16 +1,47 @@
+import ipaddress
 import json
+import socket
+from urllib.parse import urlparse
 
 import httpx
 
 from backend.llm.gemini import generate
 
 
+def _is_safe_url(url: str) -> bool:
+    """Guard against SSRF: allow only http(s) to public hosts."""
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        return False
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+        return False
+    try:
+        infos = socket.getaddrinfo(parsed.hostname, None)
+    except (socket.gaierror, UnicodeError):
+        return False
+    for info in infos:
+        ip = ipaddress.ip_address(info[4][0])
+        if (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_reserved
+            or ip.is_multicast
+            or ip.is_unspecified
+        ):
+            return False
+    return True
+
+
 def _default_fetch(url: str) -> str:
+    if not _is_safe_url(url):
+        return ""
     try:
         r = httpx.get(
             url,
             timeout=15,
-            follow_redirects=True,
+            follow_redirects=False,  # don't let redirects bypass the SSRF guard
             headers={"User-Agent": "FreelancingAgent/1.0"},
         )
         return r.text[:6000]

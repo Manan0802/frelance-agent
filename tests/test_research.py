@@ -1,4 +1,13 @@
-from backend.engine_b.research import research_target
+from backend.engine_b.research import research_target, _is_safe_url
+
+
+def test_ssrf_guard_blocks_internal_addresses():
+    assert _is_safe_url("http://127.0.0.1/") is False
+    assert _is_safe_url("http://169.254.169.254/latest/meta-data/") is False
+    assert _is_safe_url("http://10.0.0.5/") is False
+    assert _is_safe_url("file:///etc/passwd") is False
+    assert _is_safe_url("http://0.0.0.0/") is False
+    assert _is_safe_url("https://8.8.8.8/") is True
 
 
 class T:

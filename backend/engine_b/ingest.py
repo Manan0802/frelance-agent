@@ -11,12 +11,14 @@ def _hash(name: str, location: str) -> str:
 
 def ingest_targets(rows: list[dict], db) -> list[OutboundTarget]:
     created = []
+    seen: set[str] = set()
     for row in rows:
         name = row.get("name", "").strip()
         location = row.get("address") or row.get("location") or ""
         h = _hash(name, location)
-        if db.query(OutboundTarget).filter_by(dedup_hash=h).first():
+        if h in seen or db.query(OutboundTarget).filter_by(dedup_hash=h).first():
             continue
+        seen.add(h)
         t = OutboundTarget(
             id=str(uuid.uuid4()),
             name=name,

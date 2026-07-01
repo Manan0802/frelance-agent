@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     greenapi_id: str = ""
     greenapi_token: str = ""
     manan_whatsapp: str = ""
+    api_key: str = ""  # if set, required on state-changing API calls
 
 
 settings = Settings()

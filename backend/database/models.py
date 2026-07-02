@@ -44,5 +44,31 @@ class CrmRecord(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
+class JobLead(Base):
+    __tablename__ = "job_leads"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    source: Mapped[str] = mapped_column(String)
+    title: Mapped[str] = mapped_column(String)
+    description: Mapped[str] = mapped_column(Text, default="")
+    url: Mapped[str | None] = mapped_column(String, nullable=True)
+    budget: Mapped[str | None] = mapped_column(String, nullable=True)
+    dedup_hash: Mapped[str] = mapped_column(String, unique=True)
+    score: Mapped[float] = mapped_column(Float, default=0.0)
+    skill_matched: Mapped[str] = mapped_column(Text, default="")
+    auto_rejected: Mapped[bool] = mapped_column(default=False)
+    raw: Mapped[str] = mapped_column(Text, default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class InboundProposal(Base):
+    __tablename__ = "inbound_proposals"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    job_id: Mapped[str] = mapped_column(ForeignKey("job_leads.id"))
+    draft_text: Mapped[str] = mapped_column(Text, default="")
+    personalization_score: Mapped[float] = mapped_column(Float, default=0.0)
+    status: Mapped[str] = mapped_column(String, default="draft")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 def create_all(bind=engine):
     Base.metadata.create_all(bind)

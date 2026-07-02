@@ -4,13 +4,18 @@ Personal AI client-acquisition system for Manan (AI engineer, New Delhi). Finds 
 clients, drafts personalized outreach, tracks pipeline. **Human always approves + sends
 manually — never auto-send.**
 
-## Current status (2026-06-28)
-- **Phase 1 (Engine B / outbound) = COMPLETE.** 14 tests green.
-- Pipeline works: ingest local-business targets → research (site + Gemini) → portfolio
-  match (embeddings) → write message (self-eval regen) → WhatsApp digest (green-api) →
-  review API → approve + CRM log.
-- Security: SSRF guard on website fetch; optional API-key gate + batch cap on API.
+## Current status (2026-07-02)
+- **Phase 1 (Engine B / outbound) = COMPLETE.**
+- **Phase 1.5 (Engine A / inbound) = COMPLETE.** 23 tests green total.
+- Engine B: ingest local-business targets → research (site + Gemini) → portfolio match
+  (embeddings) → write message (self-eval regen) → WhatsApp digest (green-api) → review API
+  → approve + CRM log.
+- Engine A: fetch jobs (RemoteOK / WWR RSS / JobSpy) → LLM score + auto-reject → portfolio
+  match → inbound proposal (self-eval regen) → WhatsApp digest → `/run-inbound` API.
+- Security: SSRF guard on website fetch; optional API-key gate + batch cap on APIs.
+- Tests isolated via `tests/conftest.py` (drop+create schema per test).
 - Git: work happens on `main`, pushed to `origin` (github.com/Manan0802/frelance-agent).
+- **NOT yet run live** — needs `.env` filled + real data. First live run is next.
 
 ## Read these first
 - `docs/superpowers/specs/2026-06-28-freelancing-agent-design.md` — the design + two-engine strategy
@@ -36,12 +41,14 @@ manually — never auto-send.**
 - All LLM/HTTP boundaries are dependency-injected so tests never hit the network.
 - Secrets in `.env` (gitignored) — never commit keys. Copy from `.env.example`.
 
-## Next up (Phase 1.5)
-1. **First live run of Engine B:** fill `.env` (GEMINI_API_KEY, GREENAPI_ID/TOKEN, MANAN_WHATSAPP),
-   feed real Delhi businesses via omkarcloud google-maps-scraper → real WhatsApp digest.
-2. **Engine A:** JobSpy integration + RemoteOK/WWR fetchers + scorer + inbound proposal writer.
-3. **React dashboard** (review cockpit) + APScheduler daily cron.
-4. Reply-triage (agentic-inbox pattern) via Gmail API + Gemini.
+## Next up (Phase 2)
+1. **First live run:** fill `.env` (GEMINI_API_KEY, GREENAPI_ID/TOKEN, MANAN_WHATSAPP),
+   feed real Delhi businesses (omkarcloud maps) → Engine B; real job tags → Engine A →
+   real WhatsApp digest. (Manan does this next week on his device.)
+2. **React dashboard** (review cockpit): lead cards, proposal editor, approve/skip, CRM board.
+3. **APScheduler daily cron** — one entrypoint that runs both engines each morning.
+4. **Reply-triage** (agentic-inbox pattern) via Gmail API + Gemini.
+5. Camoufox for protected scrapes; Groq fallback; enrichment (Bricks).
 
 ## Constraints
 Never auto-send. No mass spam. Data local-only except LLM calls (no PII). Quality > quantity.

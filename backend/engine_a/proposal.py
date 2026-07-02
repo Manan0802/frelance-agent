@@ -1,0 +1,35 @@
+from backend.llm.gemini import generate
+from backend.engine_b.writer import _score
+
+RULES = """Rules: open with the client's problem (never "Hi I am Manan"); reference one
+specific detail from the job; cite one relevant past project; name the tech you'd use;
+under 150 words; end with one question; do NOT commit a price; confident peer tone."""
+
+WRITE_PROMPT = """Write a proposal for this freelance job.
+Title: {title}
+Description: {description}
+Relevant past work to cite: {projects}
+{rules}{stricter}"""
+
+
+def _draft(job, projects, llm, stricter=""):
+    proj_str = "; ".join(f"{p.name}: {p.description}" for p in projects)
+    return llm(
+        WRITE_PROMPT.format(
+            title=job.get("title", ""),
+            description=job.get("description", ""),
+            projects=proj_str,
+            rules=RULES,
+            stricter=stricter,
+        )
+    )
+
+
+def write_proposal(job, projects, llm=generate) -> dict:
+    draft = _draft(job, projects, llm)
+    score = _score(draft, llm)
+    if score < 7:
+        draft = _draft(job, projects, llm,
+                       stricter="\nBe stricter: cite a concrete detail unique to this job.")
+        score = _score(draft, llm)
+    return {"draft_text": draft, "personalization_score": score}

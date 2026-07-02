@@ -18,6 +18,9 @@ manually — never auto-send.**
 - **NOT yet run live** — needs `.env` filled + real data. First live run is next.
 
 ## Read these first
+- `docs/BUILD_LOG.md` — **append-only phase history** (what/why/how each phase was built). Read this
+  to understand everything done so far. **After finishing any phase, APPEND a new section — never
+  edit/delete old ones.** This is how we keep full context so nothing goes missing as we advance.
 - `docs/superpowers/specs/2026-06-28-freelancing-agent-design.md` — the design + two-engine strategy
 - `docs/superpowers/plans/2026-06-28-phase1-engine-b.md` — the executed Phase-1 plan
 - `docs/research/TOOL_REGISTRY.md` — every evaluated open-source tool, tiered (nothing discarded)

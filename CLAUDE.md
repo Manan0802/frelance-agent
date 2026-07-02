@@ -25,6 +25,8 @@ manually — never auto-send.**
 - `docs/superpowers/plans/2026-06-28-phase1-engine-b.md` — the executed Phase-1 plan
 - `docs/PLATFORM_COVERAGE.md` — vision (volume + quality, national + international), which platforms
   are covered now vs planned, and the "add-a-platform" checklist. Goal = reach many platforms.
+- `docs/research/FREELANCE_PLATFORMS.md` — 70+ freelance platforms catalog, tiered by fit + access
+- `docs/research/INSIDER_SOURCES.md` — hidden-gig channels (HN "who's hiring", Reddit, X) + how to monitor
 - `docs/research/TOOL_REGISTRY.md` — every evaluated open-source tool, tiered (nothing discarded)
 - `FREELANCING_AGENT_PRD.md` — original vision doc
 

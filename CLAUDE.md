@@ -4,6 +4,14 @@ Personal AI client-acquisition system for Manan (AI engineer, New Delhi). Finds 
 clients, drafts personalized outreach, tracks pipeline. **Human always approves + sends
 manually — never auto-send.**
 
+## SCOPE (read first — don't drift)
+**This project = FREELANCE / project-based clients only.** People/businesses who need a project
+built and pay per-project. **Job-hunting (full-time/employment) is OUT OF SCOPE** — Manan has a
+separate job agent for that. So prioritize **freelance-gig + direct-client** sources (Upwork,
+Freelancer.com, PeoplePerHour, Contra, Fiverr, HN "freelancer seeking freelancer", Reddit `[Hiring]`
+gigs, X gig requests, local-business outbound). Pure employment job boards (Indeed/LinkedIn-jobs/
+RemoteOK/WWR full-time listings) are **deprioritized** — only use their contract/freelance slices, if at all.
+
 ## Current status (2026-07-02)
 - **Phase 1 (Engine B / outbound) = COMPLETE.**
 - **Phase 1.5 (Engine A / inbound) = COMPLETE.** 23 tests green total.

@@ -4,6 +4,10 @@
 **National (India) AND International, both.** Personalized per lead — never mass spam;
 human always approves + sends.
 
+**SCOPE:** freelance / project-based clients only. Full-time job-hunting is a **separate agent** —
+out of scope here. Prioritize freelance marketplaces + gig threads + direct/outbound. The employment
+job boards below (RemoteOK/WWR/JobSpy) are kept but **deprioritized** — use only their contract/freelance slices.
+
 **Why this is realistic:** every platform is an isolated, injectable fetcher (~30-50 lines)
 that plugs into the engine graph without touching anything else. We proved the pattern with
 the sources below; scaling to many platforms = repeat the pattern. The LLM scorer + per-message

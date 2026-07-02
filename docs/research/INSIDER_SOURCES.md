@@ -8,13 +8,16 @@ Access: 🟢 free API (agent auto-monitors) · 🟡 scrape/community (careful) �
 
 ---
 
-## 💎 The gem: "Who's Hiring / Freelancer" monthly threads
-- **Hacker News monthly threads** — first of every month:
-  - *"Ask HN: Who is hiring?"*, *"Ask HN: Freelancer? Seeking freelancer?"*, *"Who wants to be hired?"*
+## 💎 The gem: HN "Freelancer? Seeking freelancer?" monthly thread
+> **SCOPE:** target the **freelance** thread, NOT the jobs one. Use *"Freelancer? Seeking freelancer?"*
+> (project/contract work). Skip *"Ask HN: Who is hiring?"* (full-time employment) — that's the job
+> agent's lane, out of scope here.
+- **Hacker News monthly thread** — first of every month: *"Ask HN: Freelancer? Seeking freelancer?"*
+  - The **SEEKING FREELANCER** entries = businesses/founders wanting project work done = our exact target.
   - **Access: 🟢 free, no-auth [HN Algolia API](https://hn.algolia.com/api)** — query
     `https://hn.algolia.com/api/v1/search?query=freelancer%20seeking%20freelancer&tags=story`,
-    then fetch that thread's comments. Comments = direct gigs, often high-rate startup/YC work,
-    AI/dev heavy. **This is a top-tier insider source and trivially automatable.**
+    then fetch that thread's comments and keep the "SEEKING FREELANCER" ones. Often high-rate
+    startup/YC work, AI/dev heavy. **Top-tier freelance source, trivially automatable.**
 - **r/forhire monthly + Indie Hackers + WIP** carry similar "seeking dev" posts.
 
 ## 🔴 Reddit (monitorable via free API — PRAW)

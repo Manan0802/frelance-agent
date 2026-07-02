@@ -102,4 +102,19 @@ reply-triage, camoufox, Groq fallback, enrichment → Phase 2+.
 
 ---
 
+## Scope clarification (2026-07-02)
+
+**Decision (Manan):** this project is **FREELANCE / project-based clients ONLY**. Job-hunting
+(full-time employment) is a **separate agent** Manan is building — keep this one out of that lane.
+
+**Impact on Engine A:** the orchestrator/scorer/proposal code is generic and stays (it works for
+freelance gigs). But **source priority pivots**: away from employment boards (RemoteOK/WWR/JobSpy
+full-time listings) → toward freelance-gig + direct-client sources: Upwork, Freelancer.com,
+PeoplePerHour, Contra, Fiverr, **HN "Freelancer? Seeking freelancer?"** (NOT "Who is hiring?"),
+Reddit `[Hiring]` gig posts, X gig requests, and Engine B outbound (local businesses). When adding
+new sources, only add freelance/contract ones.
+
+**Not deleting** the existing RemoteOK/WWR/JobSpy fetchers — they can filter for contract/freelance
+gigs — but they're no longer the priority. See updated `PLATFORM_COVERAGE.md` / `INSIDER_SOURCES.md`.
+
 <!-- Next session: append "## Phase 2 — ..." here. Do not edit sections above. -->

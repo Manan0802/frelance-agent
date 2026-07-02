@@ -23,6 +23,8 @@ manually — never auto-send.**
   edit/delete old ones.** This is how we keep full context so nothing goes missing as we advance.
 - `docs/superpowers/specs/2026-06-28-freelancing-agent-design.md` — the design + two-engine strategy
 - `docs/superpowers/plans/2026-06-28-phase1-engine-b.md` — the executed Phase-1 plan
+- `docs/PLATFORM_COVERAGE.md` — vision (volume + quality, national + international), which platforms
+  are covered now vs planned, and the "add-a-platform" checklist. Goal = reach many platforms.
 - `docs/research/TOOL_REGISTRY.md` — every evaluated open-source tool, tiered (nothing discarded)
 - `FREELANCING_AGENT_PRD.md` — original vision doc
 

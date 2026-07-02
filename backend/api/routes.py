@@ -8,6 +8,7 @@ from backend.database.connection import get_db
 from backend.database.models import OutreachMessage, CrmRecord
 from backend.engine_b.ingest import ingest_targets
 from backend.engine_b.graph import run_engine_b
+from backend.engine_a.graph import run_engine_a
 from backend.portfolio.context import load_portfolio
 
 router = APIRouter()
@@ -15,11 +16,17 @@ router = APIRouter()
 MAX_TARGETS = 50  # cap per run: bounds LLM cost + WhatsApp volume
 
 _RUN_DEPS: dict = {}
+_INBOUND_DEPS: dict = {}
 
 
 def set_run_deps(deps: dict) -> None:
     _RUN_DEPS.clear()
     _RUN_DEPS.update(deps)
+
+
+def set_inbound_deps(deps: dict) -> None:
+    _INBOUND_DEPS.clear()
+    _INBOUND_DEPS.update(deps)
 
 
 def check_api_key(x_api_key: str | None = Header(default=None)) -> None:
@@ -49,6 +56,17 @@ def run(body: dict, db=Depends(get_db), _=Depends(check_api_key)):
             for m in msgs
         ]
     }
+
+
+@router.post("/run-inbound")
+def run_inbound(body: dict, db=Depends(get_db), _=Depends(check_api_key)):
+    jobs = body.get("jobs", [])
+    if len(jobs) > MAX_TARGETS:
+        raise HTTPException(400, f"too many jobs (max {MAX_TARGETS})")
+    pf = load_portfolio("data/portfolio_context.json")
+    props = run_engine_a(jobs, db, pf, deps=_INBOUND_DEPS or None)
+    return {"proposals": [{"id": p.id, "job_id": p.job_id, "draft_text": p.draft_text,
+                           "score": p.personalization_score} for p in props]}
 
 
 @router.get("/messages")

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from backend.api.routes import router, set_run_deps  # noqa: F401
+from backend.api.routes import router, set_run_deps, set_inbound_deps  # noqa: F401
 
 app = FastAPI(title="Freelancing Agent")
 

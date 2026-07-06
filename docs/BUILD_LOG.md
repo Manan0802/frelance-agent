@@ -117,4 +117,35 @@ new sources, only add freelance/contract ones.
 **Not deleting** the existing RemoteOK/WWR/JobSpy fetchers — they can filter for contract/freelance
 gigs — but they're no longer the priority. See updated `PLATFORM_COVERAGE.md` / `INSIDER_SOURCES.md`.
 
-<!-- Next session: append "## Phase 2 — ..." here. Do not edit sections above. -->
+## Phase 2 — Research Audit Fixes + Review Dashboard (2026-07-06)
+
+**Goal:** act on the 7-pass deep research audit (see the artifact linked from project memory)
+run before this phase — correct stale doc claims, migrate off a dead SDK, and give Manan an
+actual UI to review/approve drafts instead of raw JSON. Research-only findings on pricing and
+India payments/tax were deliberately left as reference, not code — nothing to build there yet.
+
+**Environment note:** this session runs on macOS, not the Windows the docs assumed. Created a
+fresh `venv/` here (`./venv/bin/python`, not `./venv/Scripts/python.exe`) and confirmed the
+existing 23 tests passed before changing anything.
+
+**How built (TDD, one task = failing test → code → green → commit):**
+
+| Task | File(s) | What it does |
+|---|---|---|
+| 1 | `docs/research/*.md`, `docs/PLATFORM_COVERAGE.md` | Corrected stale claims: Upwork RSS discontinued Aug 2024 (was documented as live), X/Twitter free API tier removed Feb 2026, Camoufox flagged unstable (maintainer handoff) with Patchright added as the new default, OpenSales/Linki/OpenOutreach downgraded to unverified. Catalogued new finds (gosom fallback, Prospeo/FullEnrich, PocketFlow reference, open-sdr, freelancer-rates dataset). |
+| 2 | `backend/llm/gemini.py`, `requirements.txt`, `tests/test_gemini.py` | `google-generativeai` has ended all support (surfaced as a `FutureWarning` during the very first test run on the new venv — the research audit missed this, the test run caught it). Migrated to the `google-genai` client SDK; default model bumped `gemini-1.5-flash` → `gemini-2.0-flash-lite` (highest free-tier RPM as of 2026-07). `generate()` now takes an optional `model` override. |
+| 3 | `backend/api/dashboard.py`, `backend/templates/`, `backend/static/dashboard.css`, `tests/test_dashboard.py` | New `GET /dashboard` — htmx + Jinja2 (no separate frontend build, matches the audit's "React is overhead for a solo tool" finding). Shows every outbound message and inbound proposal as a card (name, score, status pill, full draft, Approve button). `PATCH /dashboard/messages/{id}/approve` and `.../proposals/{id}/approve` patch status in place via htmx, no page reload. Refactored `routes.py`'s message-approve logic into a shared `approve_message()`/`approve_proposal()` pair so the JSON API and the dashboard don't duplicate it. |
+
+**Design decision:** dashboard is server-rendered (Jinja2 templates + htmx from CDN), not React —
+this was the audit's explicit recommendation for a single-user personal tool, and it means the
+whole app is still one FastAPI process with no separate build/deploy step.
+
+**Not done in this phase (left as backlog per the audit):** embedding model swap (MiniLM →
+gemini-embedding-001, optional/low-urgency), WhatsApp → Telegram reconsideration, APScheduler →
+plain OS cron for the daily entrypoint, a pricing agent, payments/tax tooling (both researched,
+neither built — see the audit artifact for the payments/tax findings, which need a CA's
+confirmation on the Section 44ADA point before anyone relies on them).
+
+**Result:** 29 tests green (23 baseline + 6 new: 2 gemini, 4 dashboard).
+
+<!-- Next session: append "## Phase 3 — ..." here. Do not edit sections above. -->

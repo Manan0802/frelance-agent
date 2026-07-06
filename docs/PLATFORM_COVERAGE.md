@@ -36,13 +36,13 @@ self-eval keep quality high even at volume (bad leads auto-rejected, weak messag
 ## 🔜 Planned platforms (each = one small fetcher module)
 
 ### Freelance marketplaces
-- Upwork (RSS → apply for API), Freelancer.com (API), Contra, Fiverr (inbound/profile), PeoplePerHour, Guru
+- Upwork (scrape-only — RSS discontinued Aug 2024, no free API), Freelancer.com (API, official Python SDK, access by application review), Contra, Fiverr (inbound/profile), PeoplePerHour, Guru
 
 ### Talent / startup boards
 - Wellfound (AngelList), YC "Who's Hiring", **India:** Cutshort, Instahyre, Hasjob, Internshala
 
 ### Social / direct
-- Twitter/X hiring tweets (`#hiring`, "need developer") via API v2
+- Twitter/X hiring tweets (`#hiring`, "need developer") via API v2 — **free tier removed Feb 2026, now pay-per-read**; deprioritize until Reddit/HN prove out, or budget ~$1-2/mo
 - LinkedIn jobs + direct outreach (needs **camoufox** for anti-bot — already in TOOL_REGISTRY)
 
 ### Outbound (Engine B) expansion

@@ -34,13 +34,18 @@ Access: 🟢 free API (agent auto-monitors) · 🟡 scrape/community (careful) �
 **Agent play:** monitor these for keywords (`AI`, `LangChain`, `agent`, `RAG`, `MERN`, `hiring`,
 `need developer`) → feed into Engine A scorer. Reddit's rule = value-first, no spam (matches our constraint).
 
+**2026-07 rate-limit note:** free OAuth tier = 100 req/min, unauthenticated = 10 req/min (tightened
+since 2023 API changes) — plenty for polling a handful of subreddits every few minutes at this
+project's personal scale, but this is no longer a "true unlimited free" API; keep monitoring frequency
+modest.
+
 ## 🐦 X / Twitter (monitorable via API v2 recent-search)
 - **Search queries** (real-time recent search):
   - `("need" OR "looking for" OR "hiring") ("AI developer" OR "LangChain" OR "RAG" OR "automation" OR "MERN" OR "full stack") -is:retweet lang:en`
   - hashtags: `#hiring #freelance #needdeveloper #buildinpublic #indiehackers`
 - **Build-in-public founders** post "need help building X" → warm inbound. Curate an **X List** of
   founders/startups in AI/SaaS; monitor their posts.
-- **Access: 🟢 X API v2** (free tier limited reads) or 🟡 scrape. Feed hits into Engine B (direct DM draft) / Engine A.
+- **Access: 🟡 X API v2 — free tier removed Feb 6, 2026**, now pay-per-read (~$0.005/read; legacy paid tiers only for grandfathered accounts). Cheap in absolute terms at this project's low volume, but no longer free — deprioritize until Reddit/HN prove out, or budget ~$1-2/mo explicitly. Scrape remains a 🟡 fallback. Feed hits into Engine B (direct DM draft) / Engine A.
 
 ## 🌐 Founder / indie communities (where pre-marketplace gigs appear)
 | Community | Why | Access |

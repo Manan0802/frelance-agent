@@ -24,10 +24,10 @@
 | **Upwork Fellow** | Chrome extension | In-browser proposal gen with OpenAI | 🔵 REFERENCE | If we go browser-extension route |
 | **Upwork Bot** | — | Job-alert monitor | 🔵 REFERENCE | JobSpy covers this |
 | **n8n multi-platform workflow** | n8n.io/workflows/7782 | Monitors Upwork+Freelancer+Guru+PPH → AI proposals → Sheets | 🔵 REFERENCE | No-code alt if we ever drop Python glue |
-| **OpenSales** | — | Full AI SDR team (research → real emails) | 🔵 REFERENCE | Heavy; revisit if scaling outbound |
+| **OpenSales** | — | Full AI SDR team (research → real emails) | 🔵 REFERENCE (unverified 2026-07 — no concrete GitHub hits found, re-confirm before relying on it) | Heavy; revisit if scaling outbound |
 | **b2b-sdr-agent-template** | iPythoning/b2b-sdr-agent-template | 10-stage SDR pipeline, WhatsApp/Telegram/Email, 4-engine memory | 🟡 PHASE-2 | Memory + multi-channel patterns to study |
-| **OpenOutreach** | — | Service+market → LinkedIn leads → emails → outreach | 🔵 REFERENCE | Engine B alt |
-| **Linki** | — | Open-source AI SDR, multichannel LinkedIn + cold email | 🔵 REFERENCE | Engine B alt |
+| **OpenOutreach** | — | Service+market → LinkedIn leads → emails → outreach | 🔵 REFERENCE (unverified 2026-07 — no concrete GitHub hits found, re-confirm before relying on it) | Engine B alt |
+| **Linki** | — | Open-source AI SDR, multichannel LinkedIn + cold email | 🔵 REFERENCE (unverified 2026-07 — no concrete GitHub hits found, re-confirm before relying on it) | Engine B alt |
 | **Knotie-AI** | — | Inbound/outbound voice/chat sales agent | 🔵 REFERENCE | Voice outreach experiments |
 | **gosom/google-maps-scraper** | gosom | Go-based maps scraper | 🔵 REFERENCE | Alt to omkarcloud |
 | **LinkedIn Leads Discover** | — | Seed profile → hundreds of similar prospects | 🔵 REFERENCE | Engine B targeting (needs camoufox) |
@@ -42,7 +42,8 @@
 
 | Tool | Repo | What it does | Tier | Slot |
 |---|---|---|---|---|
-| **camofox-browser** | jo-inc/camofox-browser | Anti-detect Firefox (Camoufox), C++-level fingerprint spoofing, MCP-compatible | 🟢 CORE (targeted) | Use ONLY for protected scrapes (LinkedIn/Contra/Upwork). Vanilla Playwright elsewhere. |
+| **camofox-browser** | jo-inc/camofox-browser | Anti-detect Firefox (Camoufox), C++-level fingerprint spoofing, MCP-compatible | 🔵 REFERENCE (unstable) | **2026-07 status: maintainer handoff to CloverLabsAI, latest releases self-described as experimental/not production-ready.** Best raw detection score when it works, but don't depend on it right now. |
+| **Patchright** | Playwright-patch (not a separate browser) | ~67% headless-detection reduction, stable, production-ready | 🟢 CORE (targeted) | **New default** for protected scrapes (LinkedIn/Contra/Upwork) while Camoufox is unstable. Weaker than Camoufox on hard targets (Cloudflare/DataDome) but usable now. Vanilla Playwright elsewhere. |
 
 ## 3. Reply Handling / Inbox
 
@@ -86,6 +87,17 @@
 | AutoHedge, Trading Agents, Fincept Terminal | Finance/trading agents — different domain. Reference only for multi-agent architecture patterns. |
 
 ---
+
+## 8. New finds (2026-07 audit — not yet tiered into a build slot)
+
+| Tool | Repo / Source | What it does | Tier | Note |
+|---|---|---|---|---|
+| **gosom/google-maps-scraper** | gosom | Go-based maps scraper, actively released through Jun 2026, faster than omkarcloud, ships REST API/K8s | 🔵 REFERENCE (fallback) | Use if omkarcloud breaks — confirmed actively maintained as of 2026-07 |
+| **Prospeo / FullEnrich** | prospeo.io / fullenrich.com | Free-tier decision-maker email finders (75/mo, 50/mo) | 🔵 REFERENCE | Manual-assist fallback when Bricks can't find a contact — no OSS equivalent exists in this space |
+| **PocketFlow cold-email tutorial** | The-Pocket/PocketFlow-Tutorial-Cold-Email-Personalization | Minimalist LLM framework tutorial: prospect → research → "personalization opportunity" analysis → opener | 🔵 REFERENCE | Prompt-structure ideas for Engine B's writer, not a framework swap |
+| **MatthewDailey/open-sdr** | GitHub | Company research + lead-gen agent (Firecrawl + Gemini/Anthropic), CLI + MCP server | 🔵 REFERENCE | Closest open-source cousin to Engine B's research step; generic B2B not freelance-specific, stops before personalize→notify→approve→CRM |
+| **davidmasse/freelancer-rates** | GitHub | Open dataset + analysis of what drives Upwork freelancer rate/success | 🔵 REFERENCE | The one genuinely open, forkable rate-benchmark dataset found — feeds a future pricing agent |
+| **Ever® Jobs™** | ever-jobs/ever-jobs | Aggregates 50+ job/gig sources via ATS APIs (incl. Upwork, RemoteOK) | 🔵 REFERENCE | Employment-board-heavy — filter carefully for freelance-only scope before adopting |
 
 ## Hunting Guide — what's worth finding MORE of
 

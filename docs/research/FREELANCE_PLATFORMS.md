@@ -44,7 +44,7 @@ Access legend: 🟢 API/RSS (easy, clean) · 🟡 scrape (needs care, maybe camo
 ## D. General marketplaces (volume; review-gated so slower for cold-start) ⭐⭐
 | Platform | Reach | Fit | Access | Notes |
 |---|---|---|---|---|
-| **Upwork** | Global, 18M+ freelancers | ⭐⭐ | 🟡 (RSS/API) | Biggest pool; needs profile+JSS to win premium. RSS feed exists. |
+| **Upwork** | Global, 18M+ freelancers | ⭐⭐ | 🟡 scrape-only | Biggest pool; needs profile+JSS to win premium. **RSS feed discontinued Aug 20, 2024** — no free API, scrape-only now (harder access than previously documented). |
 | **Freelancer.com** | Global | ⭐⭐ | 🟢 API | Official API, OAuth. Huge project volume. |
 | **Fiverr** | Global | ⭐⭐ | 🔵 | Gig/inbound — optimize profile, not scan. |
 | **PeoplePerHour** | Global/UK | ⭐⭐ | 🟡 | Lower competition, hourlies. |
@@ -78,7 +78,7 @@ Access legend: 🟢 API/RSS (easy, clean) · 🟡 scrape (needs care, maybe camo
 ## G. Social / direct / community (where cold-start devs actually win) ⭐⭐⭐
 | Channel | Fit | Access | Notes |
 |---|---|---|---|
-| **Twitter/X hiring tweets** | ⭐⭐⭐ | 🟢 API v2 | "#hiring", "need AI dev" — real-time, direct. |
+| **Twitter/X hiring tweets** | ⭐⭐⭐ | 🟡 API v2 (paid) | "#hiring", "need AI dev" — real-time, direct. **Free tier removed Feb 6, 2026** — now pay-per-read (~$0.005/read); cheap in absolute terms at this volume but no longer free. Deprioritize until Reddit/HN prove out, or budget ~$1-2/mo. |
 | **LinkedIn (jobs + direct outreach)** | ⭐⭐⭐ | 🟡 (camoufox) | Job posts + DM decision-makers. Anti-bot → camoufox. |
 | **Reddit** (r/forhire, r/jobbit, r/freelance) | ⭐⭐ | 🟢 API | Gig posts, direct DMs. |
 | **Indie Hackers / YC "Who's Hiring"** | ⭐⭐ | 🟡 | Founders needing AI/dev. |

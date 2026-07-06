@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 
 from backend.config import settings
 from backend.database.connection import get_db
-from backend.database.models import OutreachMessage, CrmRecord
+from backend.database.models import OutreachMessage, InboundProposal, CrmRecord
 from backend.engine_b.ingest import ingest_targets
 from backend.engine_b.graph import run_engine_b
 from backend.engine_a.graph import run_engine_a
@@ -77,11 +77,10 @@ def list_messages(db=Depends(get_db)):
     ]
 
 
-@router.patch("/messages/{message_id}/approve")
-def approve(message_id: str, db=Depends(get_db), _=Depends(check_api_key)):
+def approve_message(db, message_id: str) -> tuple[OutreachMessage, CrmRecord] | None:
     m = db.query(OutreachMessage).filter_by(id=message_id).first()
     if not m:
-        raise HTTPException(404, "message not found")
+        return None
     m.status = "approved"
     rec = CrmRecord(
         id=str(uuid.uuid4()),
@@ -92,4 +91,22 @@ def approve(message_id: str, db=Depends(get_db), _=Depends(check_api_key)):
     )
     db.add(rec)
     db.commit()
+    return m, rec
+
+
+def approve_proposal(db, proposal_id: str) -> InboundProposal | None:
+    p = db.query(InboundProposal).filter_by(id=proposal_id).first()
+    if not p:
+        return None
+    p.status = "approved"
+    db.commit()
+    return p
+
+
+@router.patch("/messages/{message_id}/approve")
+def approve(message_id: str, db=Depends(get_db), _=Depends(check_api_key)):
+    result = approve_message(db, message_id)
+    if not result:
+        raise HTTPException(404, "message not found")
+    m, rec = result
     return {"id": m.id, "status": m.status, "crm_id": rec.id}

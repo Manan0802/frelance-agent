@@ -1,0 +1,16 @@
+<article class="card" id="message-{{ m.id }}">
+  <div class="card-head">
+    <span class="card-name">{{ m.name }}</span>
+    <span class="pill score">{{ "%.0f"|format(m.score) }}/10</span>
+    <span class="pill status status-{{ m.status }}">{{ m.status }}</span>
+  </div>
+  <p class="card-draft">{{ m.draft_text }}</p>
+  {% if m.status != "approved" %}
+  <button
+    class="approve-btn"
+    hx-patch="/dashboard/messages/{{ m.id }}/approve"
+    hx-target="#message-{{ m.id }}"
+    hx-swap="outerHTML"
+  >Approve</button>
+  {% endif %}
+</article>

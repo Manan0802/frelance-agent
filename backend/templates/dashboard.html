@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Freelancing Agent — Review Dashboard</title>
+  <link rel="stylesheet" href="/static/dashboard.css" />
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="masthead">
+      <p class="eyebrow">Freelancing Agent</p>
+      <h1>Review dashboard</h1>
+      <p class="dek">Everything the agent has drafted, waiting on you. Nothing here has been sent — approve only marks it ready, you still send manually.</p>
+    </header>
+
+    <div class="stat-row">
+      <div class="stat"><div class="num">{{ stats.targets }}</div><div class="lbl">Outbound targets found</div></div>
+      <div class="stat"><div class="num">{{ stats.messages_total }}</div><div class="lbl">Messages drafted</div></div>
+      <div class="stat"><div class="num">{{ stats.messages_approved }}</div><div class="lbl">Messages approved</div></div>
+      <div class="stat"><div class="num">{{ stats.leads }}</div><div class="lbl">Inbound leads found</div></div>
+      <div class="stat"><div class="num">{{ stats.proposals_total }}</div><div class="lbl">Proposals drafted</div></div>
+      <div class="stat"><div class="num">{{ stats.proposals_approved }}</div><div class="lbl">Proposals approved</div></div>
+    </div>
+
+    <section>
+      <div class="sec-head"><span class="sec-num">B</span><h2>Outbound messages</h2></div>
+      <p class="sec-note">Engine B — cold outreach to local businesses, personalized against your portfolio.</p>
+      <div class="card-list" id="messages-list">
+        {% if not messages %}
+          <p class="empty-state">No outbound messages yet — run Engine B to find targets and draft some.</p>
+        {% endif %}
+        {% for m in messages %}
+          {% include "partials/message_row.html" %}
+        {% endfor %}
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="sec-num">A</span><h2>Inbound proposals</h2></div>
+      <p class="sec-note">Engine A — proposals for gigs/jobs that scored above the auto-reject threshold.</p>
+      <div class="card-list" id="proposals-list">
+        {% if not proposals %}
+          <p class="empty-state">No inbound proposals yet — run Engine A to fetch jobs and draft some.</p>
+        {% endif %}
+        {% for p in proposals %}
+          {% include "partials/proposal_row.html" %}
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+</body>
+</html>

@@ -12,11 +12,13 @@ Freelancer.com, PeoplePerHour, Contra, Fiverr, HN "freelancer seeking freelancer
 gigs, X gig requests, local-business outbound). Pure employment job boards (Indeed/LinkedIn-jobs/
 RemoteOK/WWR full-time listings) are **deprioritized** — only use their contract/freelance slices, if at all.
 
-## Current status (2026-07-06)
+## Current status (2026-07-08)
 - **Phase 1 (Engine B / outbound) = COMPLETE.**
 - **Phase 1.5 (Engine A / inbound) = COMPLETE.**
-- **Phase 2 (research-audit fixes + review dashboard) = COMPLETE.** 29 tests green total.
-- Engine B: ingest local-business targets → research (site + Gemini) → portfolio match
+- **Phase 2 (research-audit fixes + review dashboard) = COMPLETE.**
+- **Phase 3 (resilience + missing pieces) = COMPLETE.** 38 tests green total.
+- Engine B: ingest local-business targets (manual, or `backend/engine_b/maps_source.py` via a
+  locally-run gosom/google-maps-scraper) → research (site + Gemini) → portfolio match
   (embeddings) → write message (self-eval regen) → WhatsApp digest (green-api) → review API
   → approve + CRM log.
 - Engine A: fetch jobs (RemoteOK / WWR RSS / JobSpy) → LLM score + auto-reject → portfolio
@@ -24,7 +26,9 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Review dashboard:** `GET /dashboard` (htmx + Jinja2, no separate frontend) — every drafted
   message/proposal as a card with score, status, and an in-place Approve button.
 - LLM: Gemini via the `google-genai` SDK (the old `google-generativeai` package is fully
-  deprecated), default model `gemini-2.0-flash-lite`.
+  deprecated), default model `gemini-2.0-flash-lite`, **Groq fallback on any Gemini error**.
+- **Pricing:** `backend/pricing/suggest.py::suggest_rate()` — deterministic rate-band suggestion
+  (no LLM, no live API), internal/dashboard reference only, not wired into the writer yet.
 - Security: SSRF guard on website fetch; optional API-key gate + batch cap on APIs.
 - Tests isolated via `tests/conftest.py` (drop+create schema per test).
 - **Environment note:** built/tested on macOS this session — venv at `./venv/bin/python`, not

@@ -148,4 +148,35 @@ confirmation on the Section 44ADA point before anyone relies on them).
 
 **Result:** 29 tests green (23 baseline + 6 new: 2 gemini, 4 dashboard).
 
-<!-- Next session: append "## Phase 3 — ..." here. Do not edit sections above. -->
+---
+
+## Phase 3 — Resilience + Missing Pieces (2026-07-08)
+
+**Goal:** pick up the Phase 2 backlog — nothing should be a single point of failure, and Engine
+B should be able to find its own leads instead of needing them passed in manually.
+
+**How built (TDD, one task = failing test → code → green → commit):**
+
+| Task | File(s) | What it does |
+|---|---|---|
+| 1 | `backend/llm/gemini.py`, `backend/config.py`, `tests/test_gemini.py` | `generate()` had zero fallback — any Gemini error (rate limit, outage, bad key) broke research/scoring/writing outright. Added a Groq (Llama 3.3 70B) fallback on any Gemini exception, matching the original design intent. New `GROQ_API_KEY` setting. |
+| 2 | `backend/engine_b/maps_source.py`, `tests/test_maps_source.py` | New `fetch_google_maps()` — Engine B previously had **no automated lead source at all**; targets could only arrive via manually-crafted API calls. **Correction discovered while building this:** `omkarcloud/google-maps-scraper` (the CORE pick in `TOOL_REGISTRY.md` since Phase 0) has pivoted to a closed-source desktop app + paid hosted API — its GitHub repo now contains zero source code, just marketing docs. The 2026-07 research audit missed this (it only checked star count/activity, not whether the repo still had code in it). Rebuilt the fetcher against `gosom/google-maps-scraper` instead (MIT, confirmed active, real REST API) — verified the exact request/response contract from its official `examples/examples-api/python/scrape.py` client before writing the default implementation, rather than guessing. New `MAPS_SCRAPER_BASE_URL`/`MAPS_SCRAPER_API_KEY` settings; requires running the gosom service locally (`docker run gosom/google-maps-scraper`) for the real (non-test) path. |
+| 3 | `backend/pricing/suggest.py`, `tests/test_pricing.py` | The original PRD's "Pricing Helper Agent" (§5.4) was designed but never built. Added a pure, deterministic `suggest_rate()` — no LLM call, no live rate API (none exists free, per the research audit) — using the rate bands the audit found ($60-95/hr agentic AI, $40-70/hr full-stack, geography-tiered). Internal/dashboard reference only; the writer's "never quote a price in the first message" rule is untouched. |
+
+**Lesson worth keeping:** two separate research passes (the Phase 2 audit fork, then this
+session's own check) both initially trusted `omkarcloud/google-maps-scraper`'s star count and
+"active" status without checking whether the repo still contained code — a repo can look alive
+(stars, recent README edits) while having quietly turned into pure marketing for a paid product.
+Worth an actual `gh api repos/.../contents` check before depending on any "OSS tool" claim, not
+just a description/star-count glance.
+
+**Not done in this phase (still backlog):** wiring `suggest_rate()` into the writer/dashboard
+(needs a clean signal for "is this an agentic-AI pitch" — the matched portfolio project's `type`
+field looks like the right source, not built yet), embedding model swap, WhatsApp → Telegram,
+APScheduler → plain cron entrypoint script, payments/tax tooling (research-only, needs a CA's
+sign-off on the Section 44ADA point before anyone relies on it).
+
+**Result:** 38 tests green (29 prior + 9 new: 1 Groq-fallback test added to `test_gemini.py`, 3 in
+new `test_maps_source.py`, 5 in new `test_pricing.py`).
+
+<!-- Next session: append "## Phase 4 — ..." here. Do not edit sections above. -->

@@ -18,7 +18,8 @@
 | **Upwork-AI-jobs-applier** | kaymen99/Upwork-AI-jobs-applier | LangGraph: scrape Upwork → score (7/10 gate) → personalized cover letters → interview prep | 🟢 CORE | Engine A base (scorer + proposal writer) |
 | **sales-outreach-automation-langgraph** | kaymen99/sales-outreach-automation-langgraph | LangGraph + Gemini: research lead (LinkedIn/site/news/pain) → personalized outreach → CRM | 🟢 CORE | Engine B base (outbound) |
 | **JobSpy** | speedyapply/JobSpy | Aggregates Indeed/LinkedIn/Glassdoor/Google/ZipRecruiter jobs in one lib | 🟢 CORE | Engine A job aggregation (replaces 4 scrapers) |
-| **google-maps-scraper** | omkarcloud/google-maps-scraper | 50+ data points (emails/phones) for local businesses; ~10k leads/mo free | 🟢 CORE | Engine B fuel (local client finder) |
+| **google-maps-scraper (gosom)** | gosom/google-maps-scraper | Go, MIT, 36 documented data points (title/address/website/phone/category/...), CLI + Web UI + REST API (async job: POST /api/v1/scrape → poll GET /api/v1/jobs/{id}) | 🟢 CORE | Engine B fuel (local client finder) — implemented in `backend/engine_b/maps_source.py`, requires running the service locally (`docker run gosom/google-maps-scraper`) |
+| **google-maps-scraper (omkarcloud)** | omkarcloud/google-maps-scraper | ~~Was a free Python-integrable scraper~~ | 🔴 NO LONGER OPEN-SOURCE (2026-07 finding) | **Pivoted to a closed-source desktop app + paid hosted API** (200 free searches/mo, then paid). The GitHub repo now contains zero source code, only marketing docs. Do not build against this — use gosom above instead. |
 | **Bricks** (open-source Clay) | HN/show 45493974 | Local lead enrichment — AI agents + scraping over CSVs | 🟡 PHASE-1.5 | Engine B enrichment |
 | **UpworkScribe AI** | AIXerum/Upwork-Auto-Jobs-Applier-using-AI | Alt Upwork applier — classify + tailored proposals + writing-style mimic | 🔵 REFERENCE | Cross-ref vs kaymen99 for better prompts |
 | **Upwork Fellow** | Chrome extension | In-browser proposal gen with OpenAI | 🔵 REFERENCE | If we go browser-extension route |
@@ -29,7 +30,6 @@
 | **OpenOutreach** | — | Service+market → LinkedIn leads → emails → outreach | 🔵 REFERENCE (unverified 2026-07 — no concrete GitHub hits found, re-confirm before relying on it) | Engine B alt |
 | **Linki** | — | Open-source AI SDR, multichannel LinkedIn + cold email | 🔵 REFERENCE (unverified 2026-07 — no concrete GitHub hits found, re-confirm before relying on it) | Engine B alt |
 | **Knotie-AI** | — | Inbound/outbound voice/chat sales agent | 🔵 REFERENCE | Voice outreach experiments |
-| **gosom/google-maps-scraper** | gosom | Go-based maps scraper | 🔵 REFERENCE | Alt to omkarcloud |
 | **LinkedIn Leads Discover** | — | Seed profile → hundreds of similar prospects | 🔵 REFERENCE | Engine B targeting (needs camoufox) |
 | **AI Lead Generator** | — | Scrape LinkedIn → OpenAI scores → best channel | 🔵 REFERENCE | Engine B scoring ideas |
 | **OutreachStudio** | — | Cold email platform — sequences, open/reply tracking | 🟡 PHASE-2 | Outbound sequencing + deliverability |
@@ -92,7 +92,6 @@
 
 | Tool | Repo / Source | What it does | Tier | Note |
 |---|---|---|---|---|
-| **gosom/google-maps-scraper** | gosom | Go-based maps scraper, actively released through Jun 2026, faster than omkarcloud, ships REST API/K8s | 🔵 REFERENCE (fallback) | Use if omkarcloud breaks — confirmed actively maintained as of 2026-07 |
 | **Prospeo / FullEnrich** | prospeo.io / fullenrich.com | Free-tier decision-maker email finders (75/mo, 50/mo) | 🔵 REFERENCE | Manual-assist fallback when Bricks can't find a contact — no OSS equivalent exists in this space |
 | **PocketFlow cold-email tutorial** | The-Pocket/PocketFlow-Tutorial-Cold-Email-Personalization | Minimalist LLM framework tutorial: prospect → research → "personalization opportunity" analysis → opener | 🔵 REFERENCE | Prompt-structure ideas for Engine B's writer, not a framework swap |
 | **MatthewDailey/open-sdr** | GitHub | Company research + lead-gen agent (Firecrawl + Gemini/Anthropic), CLI + MCP server | 🔵 REFERENCE | Closest open-source cousin to Engine B's research step; generic B2B not freelance-specific, stops before personalize→notify→approve→CRM |

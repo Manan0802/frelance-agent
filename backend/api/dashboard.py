@@ -6,20 +6,32 @@ from fastapi.templating import Jinja2Templates
 from backend.database.connection import get_db
 from backend.database.models import OutboundTarget, OutreachMessage, JobLead, InboundProposal
 from backend.api.routes import approve_message, approve_proposal
+from backend.portfolio.context import load_portfolio
+from backend.pricing.suggest import suggest_rate
 
 router = APIRouter()
 
 templates = Jinja2Templates(directory=str(Path(__file__).resolve().parent.parent / "templates"))
 
 
-def _message_view(m: OutreachMessage, target_names: dict) -> dict:
+def _project_types() -> dict:
+    pf = load_portfolio("data/portfolio_context.json")
+    return {p.name: p.type for p in pf.projects}
+
+
+def _message_view(m: OutreachMessage, targets_by_id: dict, project_types: dict) -> dict:
+    target = targets_by_id.get(m.target_id)
+    used = [n.strip() for n in (m.portfolio_used or "").split(",") if n.strip()]
+    is_agentic = any(project_types.get(n) == "ai_ml" for n in used)
+    pricing = suggest_rate(is_agentic=is_agentic, client_geography=target.location if target else "")
     return {
         "id": m.id,
-        "name": target_names.get(m.target_id, "(unknown target)"),
+        "name": target.name if target else "(unknown target)",
         "score": m.personalization_score,
         "status": m.status,
         "draft_text": m.draft_text,
         "created_at": m.created_at,
+        "pricing": pricing,
     }
 
 
@@ -37,8 +49,9 @@ def _proposal_view(p: InboundProposal, lead_titles: dict) -> dict:
 def _dashboard_context(db) -> dict:
     targets = db.query(OutboundTarget).all()
     leads = db.query(JobLead).all()
-    target_names = {t.id: t.name for t in targets}
+    targets_by_id = {t.id: t for t in targets}
     lead_titles = {l.id: l.title for l in leads}
+    project_types = _project_types()
 
     messages = (
         db.query(OutreachMessage).order_by(OutreachMessage.created_at.desc()).all()
@@ -47,7 +60,7 @@ def _dashboard_context(db) -> dict:
         db.query(InboundProposal).order_by(InboundProposal.created_at.desc()).all()
     )
 
-    message_views = [_message_view(m, target_names) for m in messages]
+    message_views = [_message_view(m, targets_by_id, project_types) for m in messages]
     proposal_views = [_proposal_view(p, lead_titles) for p in proposals]
 
     return {
@@ -76,9 +89,9 @@ def dashboard_approve_message(message_id: str, request: Request, db=Depends(get_
     if not result:
         raise HTTPException(404, "message not found")
     m, _rec = result
-    target_names = {t.id: t.name for t in db.query(OutboundTarget).all()}
+    targets_by_id = {t.id: t for t in db.query(OutboundTarget).all()}
     return templates.TemplateResponse(
-        request, "partials/message_row.html", {"m": _message_view(m, target_names)}
+        request, "partials/message_row.html", {"m": _message_view(m, targets_by_id, _project_types())}
     )
 
 

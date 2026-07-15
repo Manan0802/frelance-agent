@@ -79,3 +79,49 @@ def test_dashboard_approve_proposal_updates_in_place():
     r = client.patch(f"/dashboard/proposals/{pid}/approve")
     assert r.status_code == 200
     assert "approved" in r.text.lower()
+
+
+def test_dashboard_shows_pricing_suggestion_for_agentic_match():
+    create_all(engine)
+    client = TestClient(app)
+    set_run_deps(
+        {
+            "research": lambda t: {"research_summary": "x", "pain_points": "needs an AI agent"},
+            "match": lambda need, projects: projects[:1],
+            "write": lambda t, r, p: {
+                "draft_text": "Hi, agentic pitch",
+                "personalization_score": 8.0,
+                "portfolio_used": ["SARA"],
+            },
+            "notify": lambda text: True,
+        }
+    )
+    client.post("/run", json={"targets": [{"name": "Acme AI Co", "address": "Delhi"}]})
+
+    r = client.get("/dashboard")
+    assert r.status_code == 200
+    assert "$36" in r.text
+    assert "$57" in r.text
+
+
+def test_dashboard_shows_lower_pricing_for_full_stack_match():
+    create_all(engine)
+    client = TestClient(app)
+    set_run_deps(
+        {
+            "research": lambda t: {"research_summary": "x", "pain_points": "needs a website"},
+            "match": lambda need, projects: projects[:1],
+            "write": lambda t, r, p: {
+                "draft_text": "Hi, full-stack pitch",
+                "personalization_score": 8.0,
+                "portfolio_used": ["Client Website (CodewellImages)"],
+            },
+            "notify": lambda text: True,
+        }
+    )
+    client.post("/run", json={"targets": [{"name": "Acme Web Co", "address": "Delhi"}]})
+
+    r = client.get("/dashboard")
+    assert r.status_code == 200
+    assert "$24" in r.text
+    assert "$42" in r.text

@@ -5,6 +5,7 @@
     <span class="pill status status-{{ m.status }}">{{ m.status }}</span>
   </div>
   <p class="card-draft">{{ m.draft_text }}</p>
+  <p class="pricing-note">Suggested rate: ${{ m.pricing.suggested_rate_usd_per_hr[0] }}&ndash;${{ m.pricing.suggested_rate_usd_per_hr[1] }}/hr ({{ m.pricing.tier }}-tier) &mdash; reference only, don't quote this in the message.</p>
   {% if m.status != "approved" %}
   <button
     class="approve-btn"

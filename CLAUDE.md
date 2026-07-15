@@ -12,11 +12,14 @@ Freelancer.com, PeoplePerHour, Contra, Fiverr, HN "freelancer seeking freelancer
 gigs, X gig requests, local-business outbound). Pure employment job boards (Indeed/LinkedIn-jobs/
 RemoteOK/WWR full-time listings) are **deprioritized** — only use their contract/freelance slices, if at all.
 
-## Current status (2026-07-08)
+## Current status (2026-07-12)
 - **Phase 1 (Engine B / outbound) = COMPLETE.**
 - **Phase 1.5 (Engine A / inbound) = COMPLETE.**
 - **Phase 2 (research-audit fixes + review dashboard) = COMPLETE.**
-- **Phase 3 (resilience + missing pieces) = COMPLETE.** 38 tests green total.
+- **Phase 3 (resilience + missing pieces) = COMPLETE.**
+- **Phase 4 (first live run + pricing wiring) = COMPLETE.** 40 tests green total.
+- **First live run done** — real Gemini + real WhatsApp digest confirmed delivered. `.env` is
+  filled and is its own standalone file (no longer shared/symlinked with Manan's other projects).
 - Engine B: ingest local-business targets (manual, or `backend/engine_b/maps_source.py` via a
   locally-run gosom/google-maps-scraper) → research (site + Gemini) → portfolio match
   (embeddings) → write message (self-eval regen) → WhatsApp digest (green-api) → review API
@@ -24,18 +27,23 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - Engine A: fetch jobs (RemoteOK / WWR RSS / JobSpy) → LLM score + auto-reject → portfolio
   match → inbound proposal (self-eval regen) → WhatsApp digest → `/run-inbound` API.
 - **Review dashboard:** `GET /dashboard` (htmx + Jinja2, no separate frontend) — every drafted
-  message/proposal as a card with score, status, and an in-place Approve button.
+  message/proposal as a card with score, status, an in-place Approve button, and (for outbound
+  messages) a live-computed pricing suggestion.
 - LLM: Gemini via the `google-genai` SDK (the old `google-generativeai` package is fully
   deprecated), default model `gemini-2.0-flash-lite`, **Groq fallback on any Gemini error**.
 - **Pricing:** `backend/pricing/suggest.py::suggest_rate()` — deterministic rate-band suggestion
-  (no LLM, no live API), internal/dashboard reference only, not wired into the writer yet.
+  (no LLM, no live API); wired into the dashboard for outbound messages, NOT yet for inbound
+  proposals (`InboundProposal` has no `portfolio_used` column to derive `is_agentic` from), and
+  NOT injected into outreach/proposal text itself (writer's "never quote a price" rule stays).
 - Security: SSRF guard on website fetch; optional API-key gate + batch cap on APIs.
-- Tests isolated via `tests/conftest.py` (drop+create schema per test).
+- Tests isolated via `tests/conftest.py` — **own DB file** (`data/test_freelancing_agent.db`),
+  separate from the dev/live DB (they used to share one file; the test fixture's drop-all was
+  silently wiping live data on every `pytest` run — fixed 2026-07-12).
 - **Environment note:** built/tested on macOS this session — venv at `./venv/bin/python`, not
   the `./venv/Scripts/python.exe` this file used to assume. Update your own commands accordingly.
-- Git: current branch is `phase1-engine-b` (this doc previously said `main` — flagging the
-  mismatch rather than silently merging/switching; confirm with Manan before assuming either).
-- **NOT yet run live** — needs `.env` filled + real data. First live run is next.
+- Git: current branch is `phase1-engine-b`, pushed to `origin` (per-folder git identity routing:
+  anything under `~/Desktop/manan/` pushes as `Manan0802` via a `~/.gitconfig` `includeIf` block
+  Manan set up himself — never touch this yourself, it's outside this repo).
 - See `docs/BUILD_LOG.md` Phase 2 entry for the full research-audit-driven changelist (doc
   corrections, Gemini SDK migration, dashboard) and what's still backlog (pricing agent,
   payments/tax tooling, embedding swap, WhatsApp→Telegram reconsideration, cron simplification).

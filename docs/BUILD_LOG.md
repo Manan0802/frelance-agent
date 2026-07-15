@@ -179,4 +179,41 @@ sign-off on the Section 44ADA point before anyone relies on it).
 **Result:** 38 tests green (29 prior + 9 new: 1 Groq-fallback test added to `test_gemini.py`, 3 in
 new `test_maps_source.py`, 5 in new `test_pricing.py`).
 
-<!-- Next session: append "## Phase 4 — ..." here. Do not edit sections above. -->
+## Phase 4 — First Live Run + Pricing Wiring (2026-07-12)
+
+**Goal:** first real live run with actual API keys, and wire the Phase 3 pricing module into
+something Manan can actually see.
+
+**`.env` filled and de-shared:** it used to be a symlink into a `../claude-transfer/.env` shared
+across ~4 of Manan's projects, which would have collided its `GROQ_API_KEY` with a different
+project's. Manan wants every project's secrets fully separate — symlink removed, `freea` now has
+its own standalone `.env` with Gemini/Groq/green-api/WhatsApp keys filled in.
+
+**GitHub push unblocked:** the machine's default `gh`/git identity (`manankumar-ai`) doesn't have
+write access to `Manan0802/frelance-agent`. Manan set up per-folder git identity routing himself
+(`~/.gitconfig` `includeIf "gitdir:~/Desktop/manan/"` → a separate credential store for
+`Manan0802`) — any repo under `~/Desktop/manan/` now pushes as Manan0802 automatically, everything
+else on the machine still uses the default. Confirmed working; all prior local-only commits
+pushed.
+
+**First live run:** `/run` called for real against Gemini + green-api WhatsApp — draft generated,
+digest delivered and confirmed received on Manan's phone. Minor content-quality note: the LLM
+invented a tech stack ("WordPress") not present in the matched portfolio project's actual data —
+worth watching, not fixed this round.
+
+**How built (TDD):**
+
+| Task | File(s) | What it does |
+|---|---|---|
+| 1 | `tests/conftest.py` | **Bug found via this session's own live run:** tests and the dev server both defaulted to the same sqlite file (`data/freelancing_agent.db`); the autouse fixture drops+recreates all tables before every test, which silently wiped real dev data on every `pytest` run (it wiped the live run's own test message). Tests now use `data/test_freelancing_agent.db` instead. |
+| 2 | `backend/api/dashboard.py`, `backend/templates/partials/message_row.html`, `backend/static/dashboard.css`, `tests/test_dashboard.py` | Wires `suggest_rate()` into outbound message cards — `is_agentic` derived from whether the message's stored `portfolio_used` project names include an `ai_ml`-typed portfolio project, `client_geography` from the target's location. Computed live at render time (no schema change, nothing persisted, never injected into the draft text). Verified against real Gemini output on the live server. |
+
+**Not done (still backlog):** same pricing wiring for Engine A proposals — `InboundProposal` has
+no `portfolio_used` column to derive `is_agentic` from, would need a small schema addition first.
+Also still open: embedding model swap, WhatsApp→Telegram, cron entrypoint script, Freelancer.com
+API source, reply-triage, CRM follow-up scheduling.
+
+**Result:** 40 tests green (38 prior + 2 new dashboard pricing tests; conftest fix touches no test
+count, just isolates the DB).
+
+<!-- Next session: append "## Phase 5 — ..." here. Do not edit sections above. -->

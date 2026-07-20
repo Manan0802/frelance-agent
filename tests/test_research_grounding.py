@@ -47,7 +47,9 @@ def test_writer_forbids_specifics_when_research_is_ungrounded():
         return "9"
 
     write_message(T(), research, projects, llm=fake_llm)
-    assert "no verified" in seen["p"].lower(), "writer must be told the research is unverified"
+    p = seen["p"].lower()
+    assert "do not invent" in p, "writer must be told not to fabricate business details"
+    assert "you know none of it" in p, "writer must be told the notes aren't verified"
 
 
 def test_writer_allows_specifics_when_research_is_grounded():

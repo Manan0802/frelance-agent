@@ -12,12 +12,44 @@ Their likely pain: {pain}
 Relevant past work you can cite: {projects}
 {grounding}{rules}{stricter}"""
 
-UNGROUNDED_NOTE = """
-IMPORTANT: there is NO VERIFIED information about this business — the notes above are inference
-from its category alone. Do NOT invent or assert specifics (products they sell, their customers,
-their history, what their current setup looks like). A believable-sounding guess that turns out
-wrong loses the client. Lead with the offer instead, and keep it short.
+NO_WEBSITE_ANGLE = """
+ANGLE — this business appears to have NO WEBSITE. You searched and could not find one. That
+absence is the ONE thing you actually verified, and it is the hook: say you looked and couldn't
+find a site, then offer to build one, and mention the bonus that you'd optimise it so they show
+up in Google search for their area.
+Do NOT invent or assert anything else about them (what they sell, their customers, their history,
+their current setup) — you know none of it, and a believable-sounding guess that turns out wrong
+loses the client. The offer carries this message, not fake insight.
 """
+
+RESEARCHED_ANGLE = """
+ANGLE — this business ALREADY HAS A WEBSITE, and the notes above come from actually reading it.
+Do NOT offer to "build them a website". Pitch from what you genuinely observed: what's missing or
+weak on it, or what you could add (automation, an AI assistant, online ordering, better search
+visibility) — whichever your cited past work actually supports.
+"""
+
+OFFER_SCORE_PROMPT = """Score this cold outreach message 0-10 on how strong and concrete its
+OFFER is. This message goes to a business with no website, so do NOT judge it on
+business-specific insight — there is none to be had, and inventing some would be worse.
+
+Lowers the score:
+- vague benefit language ("grow your business", "boost your presence") with nothing concrete
+- claiming to know things about the business it cannot know
+- no clear next step
+
+Raises the score:
+- a specific, named deliverable
+- the Google/search-visibility bonus made concrete
+- credible proof (a real past project) and a clear, low-friction ask
+
+0-3 = vague, no real offer. 4-6 = an offer, but woolly.
+7-8 = clear concrete deliverable and ask. 9-10 = that, plus credible proof and a sharp hook.
+
+Reply with ONLY a number.
+
+Message:
+{msg}"""
 
 SCORE_PROMPT = """Score this cold outreach message 0-10 on how specifically it is tailored to
 THIS business. Judge tailoring only — not how well written or persuasive it is.
@@ -62,15 +94,19 @@ def _draft(target, research, projects, llm, stricter=""):
             summary=research.get("research_summary", ""),
             pain=research.get("pain_points", ""),
             projects=proj_str,
-            grounding="" if research.get("has_source") else UNGROUNDED_NOTE,
+            grounding=RESEARCHED_ANGLE if research.get("has_source") else NO_WEBSITE_ANGLE,
             rules=RULES,
             stricter=stricter,
         )
     )
 
 
-def _score(msg, llm) -> float:
-    raw = llm(SCORE_PROMPT.format(msg=msg))
+def _score(msg, llm, has_source=True) -> float:
+    """No-website pitches are judged on offer strength, researched ones on
+    tailoring — scoring both on tailoring floors the former at ~4/10 and makes
+    the regen loop chase specifics that don't exist."""
+    template = SCORE_PROMPT if has_source else OFFER_SCORE_PROMPT
+    raw = llm(template.format(msg=msg))
     try:
         return float("".join(c for c in raw if c.isdigit() or c == ".")[:4])
     except ValueError:
@@ -78,17 +114,22 @@ def _score(msg, llm) -> float:
 
 
 def write_message(target, research, projects, llm=generate) -> dict:
+    has_source = bool(research.get("has_source"))
     draft = _draft(target, research, projects, llm)
-    score = _score(draft, llm)
+    score = _score(draft, llm, has_source)
     if score < 7:
         draft = _draft(
             target,
             research,
             projects,
             llm,
-            stricter="\nBe stricter: cite a concrete detail unique to this business.",
+            stricter=(
+                "\nBe stricter: cite a concrete detail unique to this business."
+                if has_source
+                else "\nBe stricter: make the deliverable and the next step more concrete."
+            ),
         )
-        score = _score(draft, llm)
+        score = _score(draft, llm, has_source)
     return {
         "draft_text": draft,
         "personalization_score": score,

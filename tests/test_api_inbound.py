@@ -10,7 +10,11 @@ def test_run_inbound():
         {
             "score": lambda job, pf: {"score": 90, "skill_matched": ["LangGraph"], "auto_rejected": False},
             "match": lambda need, projects: projects[:1],
-            "write": lambda job, projects: {"draft_text": "Hi", "personalization_score": 8.0},
+            "write": lambda job, projects: {
+                "draft_text": "Hi",
+                "personalization_score": 8.0,
+                "portfolio_used": [p.name for p in projects],
+            },
             "notify": lambda text: True,
         }
     )

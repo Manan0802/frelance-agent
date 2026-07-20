@@ -64,6 +64,7 @@ class InboundProposal(Base):
     __tablename__ = "inbound_proposals"
     id: Mapped[str] = mapped_column(String, primary_key=True)
     job_id: Mapped[str] = mapped_column(ForeignKey("job_leads.id"))
+    portfolio_used: Mapped[str] = mapped_column(Text, default="")
     draft_text: Mapped[str] = mapped_column(Text, default="")
     personalization_score: Mapped[float] = mapped_column(Float, default=0.0)
     status: Mapped[str] = mapped_column(String, default="draft")

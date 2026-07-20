@@ -27,7 +27,11 @@ def _seed_proposal(client):
         {
             "score": lambda job, pf: {"score": 90, "skill_matched": ["LangGraph"], "auto_rejected": False},
             "match": lambda need, projects: projects[:1],
-            "write": lambda job, projects: {"draft_text": "Hi, I can build this RAG pipeline.", "personalization_score": 9.0},
+            "write": lambda job, projects: {
+                "draft_text": "Hi, I can build this RAG pipeline.",
+                "personalization_score": 9.0,
+                "portfolio_used": ["SARA"],
+            },
             "notify": lambda text: True,
         }
     )
@@ -79,6 +83,20 @@ def test_dashboard_approve_proposal_updates_in_place():
     r = client.patch(f"/dashboard/proposals/{pid}/approve")
     assert r.status_code == 200
     assert "approved" in r.text.lower()
+
+
+def test_dashboard_shows_both_tiers_for_proposals_since_geography_is_unknown():
+    create_all(engine)
+    client = TestClient(app)
+    _seed_proposal(client)  # matches SARA, an ai_ml project
+
+    r = client.get("/dashboard")
+    assert r.status_code == 200
+    # agentic bands: high-tier $60-95, other-tier $36-57 — both shown, since
+    # JobLead carries no location to pick a tier from
+    assert "$60" in r.text and "$95" in r.text
+    assert "$36" in r.text and "$57" in r.text
+    assert "geography unknown" in r.text.lower()
 
 
 def test_dashboard_shows_pricing_suggestion_for_agentic_match():

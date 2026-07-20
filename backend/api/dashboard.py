@@ -35,7 +35,12 @@ def _message_view(m: OutreachMessage, targets_by_id: dict, project_types: dict) 
     }
 
 
-def _proposal_view(p: InboundProposal, lead_titles: dict) -> dict:
+def _proposal_view(p: InboundProposal, lead_titles: dict, project_types: dict) -> dict:
+    used = [n.strip() for n in (p.portfolio_used or "").split(",") if n.strip()]
+    is_agentic = any(project_types.get(n) == "ai_ml" for n in used)
+    # JobLead carries no client location, so we can't pick a geography tier —
+    # show both bands rather than silently defaulting to the lower one, which
+    # would under-price the international remote gigs these boards mostly carry.
     return {
         "id": p.id,
         "name": lead_titles.get(p.job_id, "(unknown job)"),
@@ -43,6 +48,8 @@ def _proposal_view(p: InboundProposal, lead_titles: dict) -> dict:
         "status": p.status,
         "draft_text": p.draft_text,
         "created_at": p.created_at,
+        "pricing_high": suggest_rate(is_agentic=is_agentic, client_geography="US"),
+        "pricing_other": suggest_rate(is_agentic=is_agentic, client_geography=""),
     }
 
 
@@ -61,7 +68,7 @@ def _dashboard_context(db) -> dict:
     )
 
     message_views = [_message_view(m, targets_by_id, project_types) for m in messages]
-    proposal_views = [_proposal_view(p, lead_titles) for p in proposals]
+    proposal_views = [_proposal_view(p, lead_titles, project_types) for p in proposals]
 
     return {
         "messages": message_views,
@@ -102,5 +109,5 @@ def dashboard_approve_proposal(proposal_id: str, request: Request, db=Depends(ge
         raise HTTPException(404, "proposal not found")
     lead_titles = {l.id: l.title for l in db.query(JobLead).all()}
     return templates.TemplateResponse(
-        request, "partials/proposal_row.html", {"p": _proposal_view(p, lead_titles)}
+        request, "partials/proposal_row.html", {"p": _proposal_view(p, lead_titles, _project_types())}
     )

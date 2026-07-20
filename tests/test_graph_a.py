@@ -23,7 +23,11 @@ def test_run_engine_a_persists_and_notifies():
             "auto_rejected": "Plumber" in job["title"],
         },
         "match": lambda need, projects: projects[:1],
-        "write": lambda job, projects: {"draft_text": "Hi", "personalization_score": 8.0},
+        "write": lambda job, projects: {
+            "draft_text": "Hi",
+            "personalization_score": 8.0,
+            "portfolio_used": [p.name for p in projects],
+        },
         "notify": lambda text: sent.update({"text": text}) or True,
     }
     out = run_engine_a(jobs, db, pf, deps=deps)

@@ -49,6 +49,7 @@ def run_engine_a(job_dicts, db, portfolio, deps=None):
         w = write(job, projects)
         prop = InboundProposal(
             id=str(uuid.uuid4()), job_id=lead.id,
+            portfolio_used=",".join(w["portfolio_used"]),
             draft_text=w["draft_text"], personalization_score=w["personalization_score"],
         )
         db.add(prop)

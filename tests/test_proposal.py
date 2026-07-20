@@ -17,3 +17,4 @@ def test_proposal_regens_when_low_score():
     assert out["personalization_score"] == 9.0
     assert state["drafts"] == 2
     assert "draft#2" in out["draft_text"]
+    assert out["portfolio_used"] == ["SARA"]

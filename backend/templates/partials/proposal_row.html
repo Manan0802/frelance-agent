@@ -5,6 +5,7 @@
     <span class="pill status status-{{ p.status }}">{{ p.status }}</span>
   </div>
   <p class="card-draft">{{ p.draft_text }}</p>
+  <p class="pricing-note">Suggested rate (geography unknown &mdash; check the posting): US/UK/EU client ${{ p.pricing_high.suggested_rate_usd_per_hr[0] }}&ndash;${{ p.pricing_high.suggested_rate_usd_per_hr[1] }}/hr &middot; elsewhere ${{ p.pricing_other.suggested_rate_usd_per_hr[0] }}&ndash;${{ p.pricing_other.suggested_rate_usd_per_hr[1] }}/hr &mdash; reference only, don't quote this in the proposal.</p>
   {% if p.status != "approved" %}
   <button
     class="approve-btn"

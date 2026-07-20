@@ -32,4 +32,8 @@ def write_proposal(job, projects, llm=generate) -> dict:
         draft = _draft(job, projects, llm,
                        stricter="\nBe stricter: cite a concrete detail unique to this job.")
         score = _score(draft, llm)
-    return {"draft_text": draft, "personalization_score": score}
+    return {
+        "draft_text": draft,
+        "personalization_score": score,
+        "portfolio_used": [p.name for p in projects],
+    }

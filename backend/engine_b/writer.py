@@ -1,8 +1,10 @@
 from backend.llm.gemini import generate
 
 RULES = """Rules: start with the client's problem (never "Hi I am Manan"); reference one
-specific detail; mention one relevant past project; name the tech you'd use; under 120 words;
-end with one question; do NOT commit a price; confident peer tone, not sycophantic."""
+specific detail; mention one relevant past project; name the tech you'd use — use ONLY tech
+listed in that project's stack above, never invent a tool or framework that isn't listed;
+under 120 words; end with one question; do NOT commit a price; confident peer tone, not
+sycophantic."""
 
 WRITE_PROMPT = """Write a cold outreach message to {name}, a {category} in {location}.
 Their situation: {summary}
@@ -17,8 +19,18 @@ Message:
 {msg}"""
 
 
+def format_projects(projects) -> str:
+    """Include each project's real stack — without it the LLM has no grounding
+    for the "name the tech you'd use" rule and invents one."""
+    return "; ".join(
+        f"{p.name} [built with: {', '.join(p.tech)}]: {p.description}" if p.tech
+        else f"{p.name}: {p.description}"
+        for p in projects
+    )
+
+
 def _draft(target, research, projects, llm, stricter=""):
-    proj_str = "; ".join(f"{p.name}: {p.description}" for p in projects)
+    proj_str = format_projects(projects)
     return llm(
         WRITE_PROMPT.format(
             name=target.name,

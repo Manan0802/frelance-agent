@@ -1,9 +1,10 @@
 from backend.llm.gemini import generate
-from backend.engine_b.writer import _score
+from backend.engine_b.writer import _score, format_projects
 
 RULES = """Rules: open with the client's problem (never "Hi I am Manan"); reference one
-specific detail from the job; cite one relevant past project; name the tech you'd use;
-under 150 words; end with one question; do NOT commit a price; confident peer tone."""
+specific detail from the job; cite one relevant past project; name the tech you'd use — use
+ONLY tech listed in that project's stack above, never invent a tool or framework that isn't
+listed; under 150 words; end with one question; do NOT commit a price; confident peer tone."""
 
 WRITE_PROMPT = """Write a proposal for this freelance job.
 Title: {title}
@@ -13,7 +14,7 @@ Relevant past work to cite: {projects}
 
 
 def _draft(job, projects, llm, stricter=""):
-    proj_str = "; ".join(f"{p.name}: {p.description}" for p in projects)
+    proj_str = format_projects(projects)
     return llm(
         WRITE_PROMPT.format(
             title=job.get("title", ""),

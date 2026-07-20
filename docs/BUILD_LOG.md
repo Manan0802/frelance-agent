@@ -295,4 +295,48 @@ material. Consider filtering or ranking on this before scaling volume.
 **Result:** 47 tests green (41 prior + 6 new: 2 writer-grounding/rubric, 4 in new
 `test_research_grounding.py`).
 
-<!-- Next session: append "## Phase 7 — ..." here. Do not edit sections above. -->
+## Phase 7 — Two Pitch Angles (2026-07-15)
+
+**Corrects a wrong conclusion from Phase 6.** Phase 6 ended by recommending Manan *prefer targets
+that have websites*, on the logic that no-website businesses can't be researched and therefore
+can't be personalised. Manan pushed back, and he was right:
+
+> "jinka website nahi unko aise toh pitch karte hain — maine bahut dhunda nahi mila, hum aise
+> developer hain, itne mein aapki website bana denge, aur bonus mein bold denge Google search ke
+> hisaab se optimize... aur jinka hai unko aur sahi se target karenge. Khali website thodi bechni
+> humne."
+
+The missing website **is** the verified fact, and it makes a concrete honest offer — no fabrication
+required. The Phase 6 framing confused "nothing to research" with "not worth pitching".
+
+**What changed:**
+
+| Segment | Angle |
+|---|---|
+| No website | Lead with the hook: searched, couldn't find a site → offer to build it + the bonus of optimising it for Google/local search. Still explicitly forbidden from inventing anything else about the business. |
+| Has website | Pitch from what was genuinely read off their site. **Explicitly told NOT to offer to build a website they already have** — instead offer what the cited past work actually supports (automation, an AI assistant, ordering, search visibility). |
+
+**Scoring split with it.** The Phase 6 strict tailoring rubric is right for researched leads but
+wrong for no-website ones: with nothing real to be specific about, it floored them at ~4/10 and
+sent the regen loop chasing specifics that don't exist. `OFFER_SCORE_PROMPT` now judges those on
+offer strength instead — concrete deliverable, the search-visibility bonus made concrete, credible
+proof, clear ask — and `_score()` takes `has_source` to pick the rubric.
+
+**Verified live on both paths:**
+- No website → *"I couldn't find a website for Bansal Mithai Ghar... built with React and Node.js,
+  like CodewellImages... visible in Google searches for Pitampura, Delhi"* — **7.0**, up from 4.0,
+  with zero invented business detail.
+- Real site fetched → *"Slow image loading... I noticed multiple image sizes and formats... with a
+  visual search engine like ShopLens, built using CLIP, FAISS, and Python"* — no website rebuild
+  offered, and it reached for a **different portfolio project**, which is the point: the system
+  isn't just selling websites.
+
+**Loose thread worth a look:** in that second example the match is a bit of a stretch — ShopLens is
+visual *search*, pitched here for image *optimisation*. The matcher picked it on image-related
+similarity and the writer papered over the gap. Worth watching whether portfolio matching needs a
+relevance floor.
+
+**Result:** 51 tests green (47 prior + 4 new in `test_pitch_angles.py`; one Phase 6 test updated
+to assert intent rather than the old prompt's exact wording).
+
+<!-- Next session: append "## Phase 8 — ..." here. Do not edit sections above. -->

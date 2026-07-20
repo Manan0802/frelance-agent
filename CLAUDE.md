@@ -19,13 +19,22 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 3 (resilience + missing pieces) = COMPLETE.**
 - **Phase 4 (first live run + pricing wiring) = COMPLETE.**
 - **Phase 5 (pricing symmetry for Engine A) = COMPLETE.**
-- **Phase 6 (message quality / anti-hallucination) = COMPLETE.** 47 tests green total.
-- **Grounding rule (Phase 6, important):** `research_target()` returns `has_source` — whether a
-  website was actually fetched. When false, the research + writer prompts forbid stating any
-  specifics (products, customers, history, setup), because Gemini will otherwise invent
-  confident-sounding detail from just a name and category. Targets with **no website cannot be
-  genuinely personalized**; the personalization score now honestly reflects that (~4/10, not a
-  false 8/10). Prefer website-having targets for quality leads.
+- **Phase 6 (message quality / anti-hallucination) = COMPLETE.**
+- **Phase 7 (two pitch angles) = COMPLETE.** 51 tests green total.
+- **Grounding rule (important):** `research_target()` returns `has_source` — whether a website was
+  actually fetched. When false, the prompts forbid stating specifics (products, customers, history,
+  setup), because Gemini will otherwise invent confident-sounding detail from just a name and
+  category.
+- **Two pitch angles (Phase 7) — both segments are good targets, they just need different offers:**
+  - **No website** → the hook IS that absence ("searched, couldn't find your site") → offer to
+    build it + optimise for Google/local search. Honest, concrete, needs no fabrication.
+  - **Has website** → pitch from what was actually read off their site, and **never offer to build
+    a website they already have**; offer what the cited past work supports.
+  - Scoring splits too: no-website pitches are scored on **offer strength** (`OFFER_SCORE_PROMPT`),
+    researched ones on **tailoring** (`SCORE_PROMPT`) — scoring the former on tailoring floors it
+    at ~4/10 and makes the regen loop chase specifics that don't exist.
+  - **Don't reduce this to "selling websites"** — for a business that has one, the pitch should
+    reach for automation/AI/whatever the portfolio actually supports.
 - Writers pass each portfolio project's real `tech` stack into the prompt via
   `writer.format_projects()` and forbid naming unlisted tech — without it the model invents
   stacks (once claimed "WordPress" for a React/Node project).

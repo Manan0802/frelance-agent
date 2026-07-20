@@ -17,7 +17,8 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 1.5 (Engine A / inbound) = COMPLETE.**
 - **Phase 2 (research-audit fixes + review dashboard) = COMPLETE.**
 - **Phase 3 (resilience + missing pieces) = COMPLETE.**
-- **Phase 4 (first live run + pricing wiring) = COMPLETE.** 40 tests green total.
+- **Phase 4 (first live run + pricing wiring) = COMPLETE.**
+- **Phase 5 (pricing symmetry for Engine A) = COMPLETE.** 41 tests green total.
 - **First live run done** — real Gemini + real WhatsApp digest confirmed delivered. `.env` is
   filled and is its own standalone file (no longer shared/symlinked with Manan's other projects).
 - Engine B: ingest local-business targets (manual, or `backend/engine_b/maps_source.py` via a
@@ -32,9 +33,13 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - LLM: Gemini via the `google-genai` SDK (the old `google-generativeai` package is fully
   deprecated), default model `gemini-2.0-flash-lite`, **Groq fallback on any Gemini error**.
 - **Pricing:** `backend/pricing/suggest.py::suggest_rate()` — deterministic rate-band suggestion
-  (no LLM, no live API); wired into the dashboard for outbound messages, NOT yet for inbound
-  proposals (`InboundProposal` has no `portfolio_used` column to derive `is_agentic` from), and
-  NOT injected into outreach/proposal text itself (writer's "never quote a price" rule stays).
+  (no LLM, no live API); wired into the dashboard for **both** outbound messages (single
+  geography-tiered band, from the target's location) and inbound proposals (**both** bands shown,
+  since `JobLead` has no location — see BUILD_LOG Phase 5 for why not defaulting to the lower
+  tier). Never injected into outreach/proposal text itself (writer's "never quote a price" rule stays).
+- **No migration tool** (no Alembic). Schema changes so far are hand-applied additive `ALTER TABLE`
+  on `data/freelancing_agent.db` — `create_all()` only creates missing tables, never adds columns
+  to existing ones. Wire up Alembic if schema churn increases.
 - Security: SSRF guard on website fetch; optional API-key gate + batch cap on APIs.
 - Tests isolated via `tests/conftest.py` — **own DB file** (`data/test_freelancing_agent.db`),
   separate from the dev/live DB (they used to share one file; the test fixture's drop-all was

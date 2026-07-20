@@ -216,4 +216,36 @@ API source, reply-triage, CRM follow-up scheduling.
 **Result:** 40 tests green (38 prior + 2 new dashboard pricing tests; conftest fix touches no test
 count, just isolates the DB).
 
-<!-- Next session: append "## Phase 5 — ..." here. Do not edit sections above. -->
+## Phase 5 — Pricing Symmetry for Engine A (2026-07-15)
+
+**Goal:** close the gap Phase 4 left open — inbound proposals had no pricing suggestion because
+`InboundProposal` had no way to tell whether the pitch was agentic-AI or full-stack work.
+
+**How built (TDD):**
+
+| Task | File(s) | What it does |
+|---|---|---|
+| 1 | `backend/engine_a/proposal.py`, `backend/database/models.py`, `backend/engine_a/graph.py` | `write_proposal()` now returns `portfolio_used` (mirroring `engine_b/writer.py`'s contract), and `InboundProposal` gained a `portfolio_used` column to persist it. Three test fakes updated to match the real contract — Engine B's equivalents already included this field, so this is the two engines converging rather than a new pattern. |
+| 2 | `backend/api/dashboard.py`, `backend/templates/partials/proposal_row.html` | Proposal cards now carry a pricing suggestion, derived the same way as outbound (matched project's `type == "ai_ml"` → agentic band). |
+
+**Design decision worth keeping:** outbound targets have a `location`, so their card shows one
+geography-adjusted band. `JobLead` has **no location field at all** — so for proposals there is
+genuinely no geography to tier on. Defaulting to the lower "other" tier (0.6x) would have
+systematically under-priced the international remote gigs RemoteOK/WWR/JobSpy mostly carry —
+a silent, harmful default. Instead proposal cards show **both** bands with "geography unknown —
+check the posting" stated on the card. If a location field is ever added to `JobLead`, this can
+collapse to the single-band treatment outbound already uses.
+
+**Schema migration note:** the dev DB predated the new column, and `create_all()` only creates
+missing *tables*, never adds columns. Applied an additive `ALTER TABLE inbound_proposals ADD
+COLUMN portfolio_used TEXT DEFAULT ''` — non-destructive, verified row counts unchanged before
+and after (`inbound_proposals` was empty; `outreach_messages`/`outbound_targets` rows untouched).
+**This project has no migration tool** (Alembic was in the PRD's stack list but never set up) —
+fine at one-column-every-few-phases, but if schema churn picks up, wire up Alembic rather than
+hand-writing more ALTERs.
+
+**Result:** 41 tests green (40 prior + 1 new). Verified the rendered HTML on a running server with
+a temporary seeded proposal (since the tests assert figures, not entity rendering), then removed
+the seed and confirmed the DB was back to its prior state.
+
+<!-- Next session: append "## Phase 6 — ..." here. Do not edit sections above. -->

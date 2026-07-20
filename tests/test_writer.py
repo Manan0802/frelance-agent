@@ -55,3 +55,16 @@ def test_writer_grounds_tech_claims_in_the_portfolio():
     p = seen["draft_prompt"]
     assert "React" in p and "Node.js" in p, "actual tech stack must reach the LLM"
     assert "invent" in p.lower(), "prompt must forbid inventing tech"
+
+
+def test_scorer_rubric_rejects_echoing_input_as_personalization():
+    """A live run self-scored 8/10 for a message whose only "personalization"
+    was restating the city we fed it ("I noticed you're based in Delhi").
+    The rubric must state that echoing known facts doesn't count, otherwise
+    the <7 regen gate never fires."""
+    from backend.engine_b.writer import SCORE_PROMPT
+
+    prompt = SCORE_PROMPT.format(msg="anything")
+    lowered = prompt.lower()
+    assert "restat" in lowered or "echo" in lowered, "must exclude echoed input"
+    assert "generic" in lowered, "must name the generic-template failure mode"

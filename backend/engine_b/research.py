@@ -53,20 +53,30 @@ RESEARCH_PROMPT = """You are researching a local business for a freelance pitch.
 Business: {name} ({category}) in {location}.
 Website content (truncated):
 {site}
-
+{grounding}
 Return ONLY JSON: {{"research_summary": "...", "pain_points": "concrete problems a web/AI dev could fix"}}"""
+
+UNGROUNDED_NOTE = """
+NOTE: no website content was retrieved. You know nothing about this business beyond its name,
+category and location. Do NOT state specifics about their products, customers, history or
+operations — say only what follows from the category itself, and keep the summary short.
+"""
 
 
 def research_target(target, fetch=_default_fetch, llm=generate) -> dict:
     site = fetch(target.website) if target.website else ""
+    has_source = bool(site)
     prompt = RESEARCH_PROMPT.format(
         name=target.name,
         category=target.category or "business",
         location=target.location or "",
         site=site or "(no website found)",
+        grounding="" if has_source else UNGROUNDED_NOTE,
     )
     raw = llm(prompt)
     try:
-        return json.loads(raw)
+        out = json.loads(raw)
     except json.JSONDecodeError:
-        return {"research_summary": raw.strip(), "pain_points": ""}
+        out = {"research_summary": raw.strip(), "pain_points": ""}
+    out["has_source"] = has_source
+    return out

@@ -10,10 +10,33 @@ WRITE_PROMPT = """Write a cold outreach message to {name}, a {category} in {loca
 Their situation: {summary}
 Their likely pain: {pain}
 Relevant past work you can cite: {projects}
-{rules}{stricter}"""
+{grounding}{rules}{stricter}"""
 
-SCORE_PROMPT = """Rate this outreach message's personalization 0-10 (how specific to THIS
-business vs generic). Reply with ONLY a number.
+UNGROUNDED_NOTE = """
+IMPORTANT: there is NO VERIFIED information about this business — the notes above are inference
+from its category alone. Do NOT invent or assert specifics (products they sell, their customers,
+their history, what their current setup looks like). A believable-sounding guess that turns out
+wrong loses the client. Lead with the offer instead, and keep it short.
+"""
+
+SCORE_PROMPT = """Score this cold outreach message 0-10 on how specifically it is tailored to
+THIS business. Judge tailoring only — not how well written or persuasive it is.
+
+Does NOT count as personalization:
+- restating facts the sender already knew (the business name, its city, its category)
+- generic claims any competitor could receive ("no online presence", "missing out on sales")
+- flattery
+
+Does count:
+- a concrete detail that could only come from actually looking at this business
+- a problem tied to how THIS business specifically operates
+
+0-3 = generic template, could be sent to any business of this type.
+4-6 = lightly tailored, but no real insight about them.
+7-8 = one genuine specific observation about this business.
+9-10 = multiple specific observations, tied to a concrete proposed fix.
+
+Reply with ONLY a number.
 
 Message:
 {msg}"""
@@ -39,6 +62,7 @@ def _draft(target, research, projects, llm, stricter=""):
             summary=research.get("research_summary", ""),
             pain=research.get("pain_points", ""),
             projects=proj_str,
+            grounding="" if research.get("has_source") else UNGROUNDED_NOTE,
             rules=RULES,
             stricter=stricter,
         )

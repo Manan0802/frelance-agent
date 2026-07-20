@@ -248,4 +248,51 @@ hand-writing more ALTERs.
 a temporary seeded proposal (since the tests assert figures, not entity rendering), then removed
 the seed and confirmed the DB was back to its prior state.
 
-<!-- Next session: append "## Phase 6 — ..." here. Do not edit sections above. -->
+## Phase 6 — Message Quality / Anti-Hallucination (2026-07-15)
+
+**Goal (Manan's steer):** automation/cron is NOT the priority — lead *quality* is. "Even 2 leads,
+I'll call them manually." So this phase attacks pitch honesty and quality signal, not volume.
+
+**Three chained findings, each surfaced by an actual live run rather than by tests:**
+
+**1. The writer invented tech stacks.** A live run produced "using WordPress" while citing a
+project whose real stack is React/Node. Root cause: `_draft()` only ever passed
+`"{name}: {description}"` per project — the portfolio's `tech` field was **never in the prompt** —
+while `RULES` simultaneously ordered the model to "name the tech you'd use". With no grounding it
+had to invent one. Fixed with a shared `format_projects()` (in `writer.py`, imported by
+`proposal.py` alongside the existing `_score` import) that includes each project's real stack,
+plus an explicit rule against naming unlisted tech. Verified live: now cites "React and Node.js"
+for CodewellImages, matching the portfolio exactly.
+
+**2. The self-eval scorer was uselessly generous.** It scored 8/10 a message whose only
+"personalization" was restating the city we had fed it ("I noticed you're based in Karol Bagh").
+Because the regen gate is `score < 7`, it effectively never fired — the quality loop was dead
+weight. `SCORE_PROMPT` is now an explicit rubric that names what does **not** count (restating
+known facts, generic claims any competitor could receive, flattery) with a 0-3/4-6/7-8/9-10 band
+description.
+
+**3. Fixing (2) made hallucination worse — the important one.** Now rewarded for specificity but
+still given no real data, the writer invented *"popular items like gulab jamun"* for a sweet shop
+it knew nothing about. Investigation showed the real culprit: `research_target()` returns
+confident-sounding output **whether or not anything was actually fetched**. For a business with no
+website, Gemini writes a plausible research summary from just name/category/location — pure
+speculation, indistinguishable downstream from real research.
+
+Fix: `research_target()` now returns `has_source` (did the fetch actually yield content), and both
+the research prompt and the writer prompt are explicitly constrained when it's false — state
+nothing about products, customers, history, or current setup. A believable-sounding guess that
+turns out wrong loses the client outright.
+
+**Verified live:** a no-website target now produces hedged copy with zero invented specifics, and
+honestly scores **4/10 instead of a false 8/10**.
+
+**Strategic consequence worth acting on:** a target with no website cannot be genuinely
+personalized — there is nothing to research — and the score now says so honestly. For the
+"few high-quality leads worth calling" goal, prefer targets that **have** a website (the Maps
+fetcher already returns a `website` field), since those are the only ones that yield real research
+material. Consider filtering or ranking on this before scaling volume.
+
+**Result:** 47 tests green (41 prior + 6 new: 2 writer-grounding/rubric, 4 in new
+`test_research_grounding.py`).
+
+<!-- Next session: append "## Phase 7 — ..." here. Do not edit sections above. -->

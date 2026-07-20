@@ -18,7 +18,17 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 2 (research-audit fixes + review dashboard) = COMPLETE.**
 - **Phase 3 (resilience + missing pieces) = COMPLETE.**
 - **Phase 4 (first live run + pricing wiring) = COMPLETE.**
-- **Phase 5 (pricing symmetry for Engine A) = COMPLETE.** 41 tests green total.
+- **Phase 5 (pricing symmetry for Engine A) = COMPLETE.**
+- **Phase 6 (message quality / anti-hallucination) = COMPLETE.** 47 tests green total.
+- **Grounding rule (Phase 6, important):** `research_target()` returns `has_source` — whether a
+  website was actually fetched. When false, the research + writer prompts forbid stating any
+  specifics (products, customers, history, setup), because Gemini will otherwise invent
+  confident-sounding detail from just a name and category. Targets with **no website cannot be
+  genuinely personalized**; the personalization score now honestly reflects that (~4/10, not a
+  false 8/10). Prefer website-having targets for quality leads.
+- Writers pass each portfolio project's real `tech` stack into the prompt via
+  `writer.format_projects()` and forbid naming unlisted tech — without it the model invents
+  stacks (once claimed "WordPress" for a React/Node project).
 - **First live run done** — real Gemini + real WhatsApp digest confirmed delivered. `.env` is
   filled and is its own standalone file (no longer shared/symlinked with Manan's other projects).
 - Engine B: ingest local-business targets (manual, or `backend/engine_b/maps_source.py` via a

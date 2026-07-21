@@ -1,59 +1,237 @@
 {
+  "_note": "Sources: resume (Manan_Kumar_Tech.pdf), github.com/Manan0802, manankumar.in — all URLs below verified reachable 2026-07-21. NEVER add employer names or job-role detail here (Manan's decision, 2026-07-21): work done at an employer is described as capability only, with no company named and no repo/live URL. What is not in this file cannot be cited by the writer — that is the point.",
   "personal": {
     "name": "Manan",
     "title": "AI Engineer & Full-Stack Developer",
     "location": "New Delhi, India",
-    "education": "B.Tech Software Engineering, DTU (Delhi Technological University)",
-    "current_role": "Software Engineer (Full-Time)",
+    "education": "B.Tech Software Engineering, DTU (Delhi Technological University), 2022-2026",
     "years_experience": 1,
-    "tagline": "I build AI agents and full-stack applications that solve real business problems"
+    "tagline": "I build production AI agents and full-stack applications that solve real business problems"
   },
   "skills": {
-    "ai_ml": ["LangGraph", "LangChain", "RAG pipelines", "Multi-agent systems", "FinBERT", "sentence-transformers", "OpenAI API", "Groq", "Gemini API", "HuggingFace", "ChromaDB", "Pinecone", "vector databases"],
-    "full_stack": ["React", "Node.js", "Express", "MongoDB", "FastAPI", "Python", "REST APIs", "WebSockets", "Next.js"],
-    "data": ["Pandas", "NumPy", "Matplotlib", "Data preprocessing", "EDA"],
-    "tools": ["Git", "Docker", "Railway", "Vercel", "Supabase", "Playwright"]
+    "ai_ml": [
+      "LangGraph",
+      "LangChain",
+      "CrewAI",
+      "AutoGen",
+      "RAG",
+      "Vector Search",
+      "MCPs",
+      "Skill-Based Agents",
+      "Multi-agent systems",
+      "Prompt Engineering",
+      "Machine Learning",
+      "Deep Learning",
+      "CLIP",
+      "FAISS",
+      "YOLO",
+      "PyTorch",
+      "Gemini API",
+      "OpenRouter"
+    ],
+    "full_stack": [
+      "React.js",
+      "Node.js",
+      "Express.js",
+      "MongoDB",
+      "REST APIs",
+      "WebSockets",
+      "JWT Authentication",
+      "TypeScript",
+      "Tailwind CSS",
+      "PWA",
+      "Streamlit"
+    ],
+    "data": [
+      "Pandas",
+      "NumPy",
+      "Chart.js",
+      "Power BI",
+      "MySQL",
+      "Firebase"
+    ],
+    "tools": [
+      "Git",
+      "GitHub",
+      "N8N",
+      "Langfuse",
+      "GCP",
+      "Vercel"
+    ],
+    "languages": [
+      "Python",
+      "JavaScript",
+      "C",
+      "C++"
+    ]
   },
   "projects": [
     {
+      "name": "Voice AI Advisor",
+      "type": "ai_ml",
+      "description": "Production voice-first agentic AI advisor: a single streaming RAG + tool-calling loop hitting sub-1.5s voice latency with zero PII sent to the LLM. Multi-turn contextual memory folded into one classifier call, and prompt caching reaching 99.8% cache-hit for a 90% inference cost reduction.",
+      "tech": [
+        "LangGraph",
+        "RAG",
+        "Python",
+        "Prompt caching"
+      ],
+      "pitch_for": [
+        "voice AI",
+        "AI assistant",
+        "chatbot",
+        "customer support automation",
+        "low latency AI",
+        "inference cost optimization"
+      ],
+      "url": null
+    },
+    {
       "name": "SARA",
       "type": "ai_ml",
-      "description": "LangGraph-based multi-agent system built during AI Engineering internship at IndiaMART. Handles complex multi-step workflows with agent routing and state management.",
-      "tech": ["LangGraph", "Python", "Groq", "RAG"],
-      "pitch_for": ["AI agent", "LangGraph", "multi-agent", "automation", "agentic AI"],
+      "description": "Fully autonomous skill-based LLM agent auditing 100,000+ product categories, using 10+ modular reasoning frameworks including domain-expert analysis and critic-based validation. Sits inside a multi-agent orchestration system where a master orchestrator plans and routes tasks across 7-8 specialised sub-agents via LangGraph conditional workflows.",
+      "tech": [
+        "LangGraph",
+        "Python",
+        "RAG",
+        "Multi-agent orchestration",
+        "Langfuse"
+      ],
+      "pitch_for": [
+        "AI agent",
+        "multi-agent",
+        "automation",
+        "agentic AI",
+        "workflow automation",
+        "data auditing",
+        "quality checking at scale"
+      ],
+      "url": null
+    },
+    {
+      "name": "InvestMate",
+      "type": "fintech",
+      "description": "MERN investment portfolio tracker serving 100+ users, with Google OAuth and JWT auth, a MongoDB schema tuned for sub-70ms real-time updates, 3+ live INR market APIs tracking 1000+ stock and crypto assets, and Gemini-generated investment insights.",
+      "tech": [
+        "React.js",
+        "Node.js",
+        "Express.js",
+        "MongoDB",
+        "REST APIs",
+        "Chart.js",
+        "Gemini API"
+      ],
+      "pitch_for": [
+        "fintech",
+        "investment app",
+        "portfolio tracker",
+        "MERN",
+        "financial dashboard",
+        "real-time data",
+        "user authentication"
+      ],
+      "url": "https://investmate.app"
+    },
+    {
+      "name": "NeoFin",
+      "type": "full_stack",
+      "description": "Full-stack Progressive Web App that removes manual entry by parsing unstructured voice and text commands into categorised financial data with Gemini 2.5 Flash, at sub-200ms parsing latency.",
+      "tech": [
+        "React.js",
+        "Node.js",
+        "Express.js",
+        "MongoDB",
+        "Gemini 2.5 Flash",
+        "OpenRouter",
+        "PWA",
+        "Tailwind CSS"
+      ],
+      "pitch_for": [
+        "personal finance",
+        "PWA",
+        "voice input",
+        "AI parsing",
+        "mobile web app",
+        "MERN"
+      ],
+      "url": "https://neofin-five.vercel.app/"
+    },
+    {
+      "name": "ShopLens",
+      "type": "ai_ml",
+      "description": "Multi-modal fashion search engine using YOLO for multi-region object detection and CLIP embeddings with FAISS vector indexing, enabling image-based retrieval across 40,000+ items with sub-50ms index traversal. Combines image and natural-language search with a category-aware recommendation engine.",
+      "tech": [
+        "Python",
+        "YOLO",
+        "CLIP",
+        "FAISS",
+        "Streamlit"
+      ],
+      "pitch_for": [
+        "computer vision",
+        "image search",
+        "visual search",
+        "e-commerce AI",
+        "similarity search",
+        "product recommendations"
+      ],
       "url": null
     },
     {
       "name": "Client Website (CodewellImages)",
       "type": "full_stack",
-      "description": "Built a live business website for a professional photography client. Clean, responsive, production-deployed.",
-      "tech": ["React", "Node.js"],
-      "pitch_for": ["website", "web development", "business site", "portfolio site"],
-      "url": "https://codewellimages.in"
+      "description": "Built and shipped a live business website for a professional photography client. Clean, responsive, production-deployed.",
+      "tech": [
+        "React.js",
+        "Node.js"
+      ],
+      "pitch_for": [
+        "website",
+        "web development",
+        "business site",
+        "portfolio site",
+        "responsive design",
+        "small business online presence"
+      ],
+      "url": "https://www.codewellimages.in"
     },
     {
-      "name": "InvestMate",
-      "type": "fintech",
-      "description": "MERN stack + Gemini AI portfolio tracker with AI-powered investment insights.",
-      "tech": ["MongoDB", "Express", "React", "Node.js", "Gemini API"],
-      "pitch_for": ["fintech", "investment app", "portfolio tracker", "MERN", "financial dashboard"],
+      "name": "Crop Yield Predictor",
+      "type": "ml_data",
+      "description": "ML regression model predicting crop yield at R-squared 0.91, paired with an explainable fertilizer advisor for farmers.",
+      "tech": [
+        "Python",
+        "PyTorch",
+        "Pandas",
+        "NumPy",
+        "Streamlit"
+      ],
+      "pitch_for": [
+        "machine learning",
+        "prediction model",
+        "data science",
+        "agriculture tech",
+        "analytics"
+      ],
       "url": null
     },
     {
-      "name": "ShopLens",
-      "type": "ai_ml",
-      "description": "Visual product search engine using CLIP + FAISS for similarity search.",
-      "tech": ["CLIP", "FAISS", "Python", "computer vision"],
-      "pitch_for": ["computer vision", "image search", "e-commerce AI", "similarity search"],
+      "name": "Skills Dashboard",
+      "type": "full_stack",
+      "description": "Dynamically rendered dashboard organising 1,300+ persona-based AI skill documentation files, with intelligent categorisation for LLM agents and zero-latency local indexing.",
+      "tech": [
+        "React.js",
+        "TypeScript",
+        "Tailwind CSS"
+      ],
+      "pitch_for": [
+        "dashboard",
+        "internal tool",
+        "documentation site",
+        "search and categorisation",
+        "admin panel"
+      ],
       "url": null
-    },
-    {
-      "name": "Bachatt",
-      "type": "fintech",
-      "description": "Personal finance platform using Sarvam-2B (Indian multilingual AI) for financial guidance in Hindi/English.",
-      "tech": ["Sarvam-2B", "Qwen", "FastAPI", "React"],
-      "pitch_for": ["fintech", "multilingual AI", "Indian market", "personal finance"],
-      "url": "https://bachatt.app"
     }
   ],
   "availability": "10-15 hours per week (alongside full-time job)"

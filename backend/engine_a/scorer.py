@@ -1,6 +1,5 @@
-import json
-
 from backend.llm.gemini import generate
+from backend.llm.parse import parse_json
 
 REJECT_THRESHOLD = 40
 
@@ -27,10 +26,7 @@ def score_job(job: dict, portfolio, llm=generate) -> dict:
         title=job.get("title", ""),
         description=job.get("description", ""),
     )
-    try:
-        data = json.loads(llm(prompt))
-    except json.JSONDecodeError:
-        data = {"score": 0, "skill_matched": []}
+    data = parse_json(llm(prompt), {"score": 0, "skill_matched": []})
     score = float(data.get("score", 0))
     return {
         "score": score,

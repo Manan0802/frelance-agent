@@ -1,11 +1,11 @@
 import ipaddress
-import json
 import socket
 from urllib.parse import urlparse
 
 import httpx
 
 from backend.llm.gemini import generate
+from backend.llm.parse import parse_json
 
 
 def _is_safe_url(url: str) -> bool:
@@ -74,9 +74,6 @@ def research_target(target, fetch=_default_fetch, llm=generate) -> dict:
         grounding="" if has_source else UNGROUNDED_NOTE,
     )
     raw = llm(prompt)
-    try:
-        out = json.loads(raw)
-    except json.JSONDecodeError:
-        out = {"research_summary": raw.strip(), "pain_points": ""}
+    out = parse_json(raw, {"research_summary": raw.strip(), "pain_points": ""})
     out["has_source"] = has_source
     return out

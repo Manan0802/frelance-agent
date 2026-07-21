@@ -22,7 +22,16 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 6 (message quality / anti-hallucination) = COMPLETE.**
 - **Phase 7 (two pitch angles) = COMPLETE.**
 - **Phase 8 (portfolio-match relevance floor) = COMPLETE.**
-- **Phase 9 (real portfolio data) = COMPLETE.** 57 tests green total.
+- **Phase 9 (real portfolio data) = COMPLETE.**
+- **Phase 10 (GitHub projects + WhatsApp kill switch + JSON parser fix) = COMPLETE.** 65 tests green.
+- **`WHATSAPP_ENABLED=false` is set in `.env`** — live runs will NOT message Manan. Flip to `true`
+  only when he asks; testing used to spam his phone.
+- **All LLM JSON must go through `backend/llm/parse.py::parse_json()`** — Gemini fences its JSON in
+  ```` ```json ````, and a bare `json.loads()` silently lost the payload (empty `pain_points`,
+  which broke portfolio matching; and `score: 0`, which auto-rejected every job). Never add another
+  bare `json.loads()` on an LLM response.
+- **Test fakes were more polite than the real model** for ten phases and hid that bug. When faking
+  an LLM boundary, make the fake emit the messy shape the real one does.
 - **`data/portfolio_context.json` is now built from verified sources** (resume, github.com/Manan0802,
   manankumar.in), 8 real projects with real stacks and metrics. **Never add employer names, product
   names or job-role detail to it** — Manan's explicit rule; employer work appears as anonymous

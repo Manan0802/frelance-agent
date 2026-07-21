@@ -447,4 +447,58 @@ prompt is likely the single highest-leverage next fix for the has-website angle.
 **Result:** 57 tests green (unchanged — this phase changed data, not behaviour; two tests did catch
 the rename regression before it shipped).
 
-<!-- Next session: append "## Phase 10 — ..." here. Do not edit sections above. -->
+## Phase 10 — GitHub Projects, WhatsApp Kill Switch, and a Serious Parser Bug (2026-07-21)
+
+**Three things, one of them significant.**
+
+**1. WhatsApp kill switch (`WHATSAPP_ENABLED`).** Manan asked to stop receiving messages —
+every live pipeline run fires a real digest at his phone, *including the ones run while
+developing*, so the testing in Phases 6-9 had been messaging him repeatedly. `send_whatsapp()` now
+returns `False` without posting when the flag is off. Set false in his `.env`; `.env.example` keeps
+`true`. Also made `test_send_posts_to_greenapi` set the flag explicitly, so the suite no longer
+depends on the developer's local `.env`.
+
+**2. GitHub projects added (8 → 15).** Went through all 30 repos at `github.com/Manan0802`.
+Added: Job Search Agent, AI Content Agent, Freelance Outreach Agent (this repo), NexTrade,
+6D Pose Estimation, Event Booking Platform, and an anonymous **Knowledge Compiler Agent** entry.
+
+Roughly a third of the repos — `LLM-Wiki-category-wiki-Multi-agent`, `category-wiki`,
+`Multiagent-system-Langraph` (M-CASS), `LLMwiki-Multiusecase`, `multi-agent`, `api-deployGCP`,
+`Sara-fullautonmous-specs-audit-agent` — are **employer work** (B2B seller specs, catalog
+normalisation, Indian B2B marketplace; they map directly onto the resume's internship bullets).
+Per Manan's rule none are named or linked; that capability appears only as the anonymised
+Knowledge Compiler Agent entry, leak-checked against employer/product/role names.
+
+**3. The parser bug — the important one.** A has-website lead produced *no portfolio match* even
+with 15 projects. Investigating the stored row showed why: `pain_points` was an **empty string**,
+and `research_summary` contained the raw LLM response *including* ```` ```json ```` fences.
+
+Gemini wraps JSON in fences. `json.loads()` raises on that, and both callers swallowed the error
+into a fallback:
+
+- `research_target()` dumped the whole raw string into `research_summary` and left `pain_points`
+  empty. **`pain_points` is exactly what the matcher matches on** (`graph.py`:
+  `match(r.get("pain_points") or target.name, ...)`), so researched leads were being matched on the
+  *business name* — which is the real reason has-website leads kept returning no portfolio match
+  through Phases 8-9. The writer never saw the pain either.
+- `score_job()` fell back to `score: 0`, below `REJECT_THRESHOLD` (40) — so a fenced response
+  **auto-rejected the job outright**. Engine A could have been silently rejecting everything.
+
+Both now use a shared `backend/llm/parse.py::parse_json()`, which tries the raw text, any fenced
+block, and the outermost `{...}` span before giving up. Verified live: `pain_points` populates
+correctly and no fences survive into storage.
+
+**Worth internalising:** this bug was invisible to the test suite for ten phases because every
+test injects a fake `llm` that returns clean JSON. The fakes were more polite than the real model.
+Where a boundary is faked, the fake should reproduce the messy shape the real thing emits.
+
+**Still open (unchanged, now clearly the bottleneck):** with `pain_points` finally flowing, the
+has-website case *still* matched nothing — the research came back with "slow page loading, image
+rendering optimisation", which genuinely matches nothing Manan builds. `RESEARCH_PROMPT` is never
+told what he does, so it hunts generic web-perf issues instead of the automation / AI-assistant /
+knowledge-compiler problems he is strongest at. Feeding his capability areas into the research
+prompt remains the highest-leverage next fix.
+
+**Result:** 65 tests green (58 prior + 7 new: 1 WhatsApp kill switch, 6 in new `test_llm_json.py`).
+
+<!-- Next session: append "## Phase 11 — ..." here. Do not edit sections above. -->

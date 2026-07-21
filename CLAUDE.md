@@ -20,7 +20,14 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 4 (first live run + pricing wiring) = COMPLETE.**
 - **Phase 5 (pricing symmetry for Engine A) = COMPLETE.**
 - **Phase 6 (message quality / anti-hallucination) = COMPLETE.**
-- **Phase 7 (two pitch angles) = COMPLETE.** 51 tests green total.
+- **Phase 7 (two pitch angles) = COMPLETE.**
+- **Phase 8 (portfolio-match relevance floor) = COMPLETE.** 57 tests green total.
+- **Relevance floor:** `matcher.MIN_SIMILARITY = 0.30` — measured, not guessed (genuine matches
+  score 0.38-0.74 against the real portfolio, stretches/junk ≤0.19). `match_projects()` may return
+  fewer than `top_k`, or **none**. **Re-measure the floor if the embedding model changes.**
+  When nothing matches, both writers switch to `NO_PROJECT_RULES`: cite no project, name no tech.
+  Prompt lesson learned the hard way — a late "name the tech you'd use" instruction overrides an
+  earlier "don't"; delete the clause rather than trying to negate it.
 - **Grounding rule (important):** `research_target()` returns `has_source` — whether a website was
   actually fetched. When false, the prompts forbid stating specifics (products, customers, history,
   setup), because Gemini will otherwise invent confident-sounding detail from just a name and

@@ -339,4 +339,55 @@ relevance floor.
 **Result:** 51 tests green (47 prior + 4 new in `test_pitch_angles.py`; one Phase 6 test updated
 to assert intent rather than the old prompt's exact wording).
 
-<!-- Next session: append "## Phase 8 — ..." here. Do not edit sections above. -->
+## Phase 8 — Portfolio-Match Relevance Floor (2026-07-16)
+
+**Goal:** close the loose thread Phase 7 flagged — `match_projects()` always returned `top_k`
+projects regardless of similarity, so the least-bad project got cited however irrelevant it was.
+The live example: ShopLens (a visual *search* project, CLIP/FAISS) pitched as a fix for image
+*optimisation*.
+
+**Threshold chosen from measurement, not intuition.** Ran the real embedder
+(`all-MiniLM-L6-v2`) against the real portfolio with representative need-texts:
+
+| Need | Best score |
+|---|---|
+| AI agent → SARA | 0.537 |
+| Website → CodewellImages | 0.514 |
+| Fintech → InvestMate | 0.744 |
+| Generic pain → CodewellImages (weakest genuine) | 0.381 |
+| **Image-optimisation → ShopLens (the stretch)** | **0.189** |
+| Unrelated legal query | 0.187 |
+| Unrelated plumbing query | 0.082 |
+
+Genuine matches and junk occupy non-overlapping bands with an empty gap between 0.189 and 0.381,
+so `MIN_SIMILARITY = 0.30` sits in that gap with margin on both sides. **Re-measure if the
+embedding model is ever swapped** (the audit floated `gemini-embedding-001`) — cosine
+distributions are not comparable across models.
+
+**The floor exposed two fabrication holes, both caught by live runs, not tests:**
+
+1. With an empty project list, `format_projects([])` returned `""` while `RULES` still ordered
+   "mention one relevant past project" — so the model invented a citation. Fixed: the empty case
+   now states explicitly that nothing matched and forbids inventing one.
+
+2. Even then, a live run emitted *"Using Next.js, I can help"* with no project cited. Cause: the
+   prohibition sat in the `{projects}` slot **early** in the prompt, while `RULES`' "name the tech
+   you'd use" is the **last and most direct** instruction — recency won. **Negating the instruction
+   did not work; removing it did.** Both engines now select conditional rules (`NO_PROJECT_RULES`)
+   when no project matched. Worth remembering as a general prompt lesson: don't try to override a
+   later instruction from an earlier position, delete the later one.
+
+**Verified live on the original stretch case:** now cites no project, names no tech, and pitches
+from what was genuinely read off the site ("numerous preloaded scripts and images").
+
+**Honest tradeoff this creates, worth a decision:** a no-match message is now plainer — no proof,
+no tech named. `data/portfolio_context.json` carries a `skills` list (React, Next.js, FastAPI,
+LangGraph, …) that is **real, verified data the writer has never been given** — it only ever sees
+project descriptions. Feeding skills in would let these messages truthfully say "I work with
+Next.js" instead of saying nothing. Left undone deliberately: it changes `write_message()`'s
+signature across both engines, and whether to pitch tech Manan knows but has no listed project for
+is his call, not a silent refactor.
+
+**Result:** 57 tests green (51 prior + 6 in new `test_match_relevance.py`).
+
+<!-- Next session: append "## Phase 9 — ..." here. Do not edit sections above. -->

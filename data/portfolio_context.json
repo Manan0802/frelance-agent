@@ -232,6 +232,153 @@
         "admin panel"
       ],
       "url": null
+    },
+    {
+      "name": "Job Search Agent",
+      "type": "ai_ml",
+      "description": "Personal AI career agent that finds best-fit roles across many job boards, scores each against a resume, finds warm referral contacts, drafts personalised outreach for human approval, and tracks every application. Runs entirely locally at near-zero monthly cost, and never auto-sends.",
+      "tech": [
+        "Python",
+        "FastAPI",
+        "LangGraph",
+        "Gemini API",
+        "Groq",
+        "SQLite",
+        "React.js"
+      ],
+      "pitch_for": [
+        "AI agent",
+        "automation",
+        "lead scoring",
+        "personalised outreach",
+        "workflow automation",
+        "recruitment tech",
+        "human-in-the-loop"
+      ],
+      "url": "https://github.com/Manan0802/job-agent"
+    },
+    {
+      "name": "AI Content Agent",
+      "type": "ai_ml",
+      "description": "Autonomous multi-agent system that turns a niche into a finished short video: topic ideas, script, voice-over, visuals and a rendered MP4, every stage human-gated. Hinglish-first, runs on free-tier models with no GPU.",
+      "tech": [
+        "Python",
+        "LangGraph",
+        "Gemini API",
+        "Text-to-speech",
+        "Video rendering"
+      ],
+      "pitch_for": [
+        "content automation",
+        "video generation",
+        "multi-agent",
+        "AI agent",
+        "marketing automation",
+        "social media content"
+      ],
+      "url": "https://github.com/Manan0802/ai-content-agent"
+    },
+    {
+      "name": "Freelance Outreach Agent",
+      "type": "ai_ml",
+      "description": "Two-engine client-acquisition agent: finds local businesses and freelance gigs, researches each one, matches them against a portfolio, drafts a personalised pitch with a self-evaluation loop that rewrites weak drafts, and surfaces everything on a review dashboard for approval before anything is sent.",
+      "tech": [
+        "Python",
+        "FastAPI",
+        "Gemini API",
+        "Groq",
+        "sentence-transformers",
+        "SQLite",
+        "htmx"
+      ],
+      "pitch_for": [
+        "AI agent",
+        "sales automation",
+        "lead generation",
+        "cold outreach",
+        "personalisation at scale",
+        "CRM automation"
+      ],
+      "url": "https://github.com/Manan0802/frelance-agent"
+    },
+    {
+      "name": "NexTrade",
+      "type": "fintech",
+      "description": "Full-stack trading research platform with a Python backend and TypeScript frontend, built around market analysis and decision support.",
+      "tech": [
+        "Python",
+        "TypeScript",
+        "FastAPI",
+        "React.js"
+      ],
+      "pitch_for": [
+        "fintech",
+        "trading platform",
+        "market data",
+        "analytics dashboard",
+        "full stack"
+      ],
+      "url": null
+    },
+    {
+      "name": "6D Pose Estimation",
+      "type": "ml_data",
+      "description": "Deep-learning pipeline predicting an object's 3D rotation and 3D translation from RGB-D data, with training, evaluation and inference stages.",
+      "tech": [
+        "Python",
+        "PyTorch",
+        "Computer vision",
+        "RGB-D"
+      ],
+      "pitch_for": [
+        "computer vision",
+        "deep learning",
+        "3D",
+        "robotics",
+        "pose estimation",
+        "research prototype"
+      ],
+      "url": "https://github.com/Manan0802/6d-pose"
+    },
+    {
+      "name": "Event Booking Platform",
+      "type": "full_stack",
+      "description": "Next.js platform where players discover and join events, and organisers create and manage them.",
+      "tech": [
+        "Next.js",
+        "React.js",
+        "JavaScript"
+      ],
+      "pitch_for": [
+        "booking system",
+        "events platform",
+        "marketplace",
+        "web app",
+        "user accounts"
+      ],
+      "url": "https://github.com/Manan0802/ninja-player"
+    },
+    {
+      "name": "Knowledge Compiler Agent",
+      "type": "ai_ml",
+      "description": "Stateful, cyclic agentic knowledge compiler that ingests fragmented, unstructured data from many sources and compiles it into authoritative structured encyclopedias, keeping them current with manifest-based source tracking and incremental delta updates rather than recomputing from scratch. Paired with a serverless event-driven pipeline handling high-throughput data fetch, transformation, message-queue publishing and immutable dual-audit logging.",
+      "tech": [
+        "LangGraph",
+        "Python",
+        "RAG",
+        "GCP Cloud Functions",
+        "Kafka"
+      ],
+      "pitch_for": [
+        "knowledge base",
+        "data pipeline",
+        "document processing",
+        "RAG",
+        "content generation at scale",
+        "serverless",
+        "data engineering"
+      ],
+      "url": null
     }
   ],
   "availability": "10-15 hours per week (alongside full-time job)"

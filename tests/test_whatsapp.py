@@ -6,7 +6,11 @@ def test_format_digest():
     assert "Acme Dental" in text and "9" in text
 
 
-def test_send_posts_to_greenapi():
+def test_send_posts_to_greenapi(monkeypatch):
+    # explicit, so the result doesn't depend on the developer's local .env
+    from backend.config import settings
+
+    monkeypatch.setattr(settings, "whatsapp_enabled", True)
     captured = {}
 
     class Resp:
@@ -21,3 +25,20 @@ def test_send_posts_to_greenapi():
     assert ok is True
     assert "sendMessage" in captured["url"]
     assert captured["json"]["message"] == "hello"
+
+
+def test_whatsapp_can_be_switched_off(monkeypatch):
+    """Every live pipeline run fires a real WhatsApp digest at Manan's phone,
+    including test runs. A kill switch lets the pipeline be exercised without
+    messaging him."""
+    from backend.config import settings
+
+    monkeypatch.setattr(settings, "whatsapp_enabled", False)
+    called = {"n": 0}
+
+    def fake_poster(url, json):
+        called["n"] += 1
+        raise AssertionError("must not post when disabled")
+
+    assert send_whatsapp("hello", poster=fake_poster) is False
+    assert called["n"] == 0

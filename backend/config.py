@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     maps_scraper_base_url: str = "http://localhost:8080"
     maps_scraper_api_key: str = ""
+    whatsapp_enabled: bool = True  # set false to exercise the pipeline without messaging Manan
     greenapi_id: str = ""
     greenapi_token: str = ""
     manan_whatsapp: str = ""

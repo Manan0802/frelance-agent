@@ -18,6 +18,8 @@ def _default_poster(url, json):
 
 
 def send_whatsapp(text: str, poster=_default_poster) -> bool:
+    if not settings.whatsapp_enabled:
+        return False
     url = (
         f"https://api.green-api.com/waInstance{settings.greenapi_id}"
         f"/sendMessage/{settings.greenapi_token}"

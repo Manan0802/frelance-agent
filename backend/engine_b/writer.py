@@ -6,6 +6,20 @@ listed in that project's stack above, never invent a tool or framework that isn'
 under 120 words; end with one question; do NOT commit a price; confident peer tone, not
 sycophantic."""
 
+NO_PROJECT_RULES = """Rules: start with the client's problem (never "Hi I am Manan"); reference one
+specific detail; DO NOT mention any past project and DO NOT NAME ANY SPECIFIC TECH, framework or
+tool — you have been given none, and naming one you can't back up loses the client; under 120
+words; end with one question; do NOT commit a price; confident peer tone, not sycophantic."""
+
+
+def rules_for(projects) -> str:
+    """The tech/citation rules only make sense when a project was actually
+    matched. Left in unconditionally, "name the tech you'd use" is the LAST and
+    most direct instruction the model sees, and it overrides any earlier "don't"
+    — a live run still emitted "Using Next.js" with no project cited. Removing
+    the clause works where negating it did not."""
+    return RULES if projects else NO_PROJECT_RULES
+
 WRITE_PROMPT = """Write a cold outreach message to {name}, a {category} in {location}.
 Their situation: {summary}
 Their likely pain: {pain}
@@ -74,9 +88,22 @@ Message:
 {msg}"""
 
 
+NO_MATCH_NOTE = (
+    "(NO PAST PROJECT is a close enough match to this need. Do not cite past work, "
+    "and do NOT invent a project or claim experience you weren't given. This also "
+    "overrides the tech rule below: DO NOT NAME ANY SPECIFIC TECH, framework or "
+    "tool, since none has been given to you here. Make the offer on its own merits "
+    "and keep it brief.)"
+)
+
+
 def format_projects(projects) -> str:
     """Include each project's real stack — without it the LLM has no grounding
-    for the "name the tech you'd use" rule and invents one."""
+    for the "name the tech you'd use" rule and invents one. An empty list means
+    the relevance floor rejected everything, which must be said explicitly or the
+    model fabricates a citation to satisfy the "cite a project" rule."""
+    if not projects:
+        return NO_MATCH_NOTE
     return "; ".join(
         f"{p.name} [built with: {', '.join(p.tech)}]: {p.description}" if p.tech
         else f"{p.name}: {p.description}"
@@ -95,7 +122,7 @@ def _draft(target, research, projects, llm, stricter=""):
             pain=research.get("pain_points", ""),
             projects=proj_str,
             grounding=RESEARCHED_ANGLE if research.get("has_source") else NO_WEBSITE_ANGLE,
-            rules=RULES,
+            rules=rules_for(projects),
             stricter=stricter,
         )
     )

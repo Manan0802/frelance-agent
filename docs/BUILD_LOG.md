@@ -390,4 +390,61 @@ is his call, not a silent refactor.
 
 **Result:** 57 tests green (51 prior + 6 in new `test_match_relevance.py`).
 
-<!-- Next session: append "## Phase 9 — ..." here. Do not edit sections above. -->
+## Phase 9 — Real Portfolio Data (2026-07-21)
+
+**Trigger:** Phase 8 ended asking whether the writer should be allowed to name skills Manan has but
+has no listed project for. He answered better than the question deserved — he handed over the
+source material: his resume (`Manan_Kumar_Tech.pdf`), `github.com/Manan0802`, and
+`manankumar.in`. Ground the file in real data instead of deciding how much to let it guess.
+
+**Manan's constraint on employer work (important, keep):** capability may be cited, but
+**no employer name, product name, or job-role detail** ("company ka naam... ya main jo karta hoon,
+yeh nahi aana chahiye"). Enforced structurally rather than by prompt instruction: those identifiers
+simply aren't in `portfolio_context.json`, and the writer can only cite what it's given. There's a
+leak check in the session log; re-run something like it if this file is ever edited.
+
+**Corrections found by cross-checking the three sources:**
+
+1. **`Bachatt` was listed as a personal project — it is his employer.** The file described it as
+   "Personal finance platform using Sarvam-2B…" with a live URL. Pitching an employer's product as
+   personal portfolio work to freelance clients is a real credibility and employment risk. Now
+   present only as an anonymous capability entry ("Voice AI Advisor"). `SARA` had the same problem
+   in milder form — its description named the internship employer; removed.
+2. **`manankumar.in` lists InvestMate's stack as Python/FastAPI/PostgreSQL** — but the repo is
+   100% JavaScript and the resume says MERN. Used MERN here. **His own website still carries the
+   wrong stack; flagged to him to fix there.**
+3. ShopLens was missing YOLO and Streamlit; several skills were missing or stale (the old file
+   listed FinBERT, Pinecone, ChromaDB, Docker, Supabase, Playwright — none of which appear in the
+   resume; kept them out rather than assert them).
+
+**Added three real projects that were absent entirely:** NeoFin (MERN + Gemini 2.5 Flash PWA,
+live), Crop Yield Predictor, Skills Dashboard. Portfolio went 5 → 8 projects, and metrics from the
+resume (100+ users, sub-70ms updates, 40,000+ indexed items, R²=0.91) are now available as concrete
+proof in pitches.
+
+**Two implementation details worth not re-learning:**
+- All four live URLs were verified reachable before inclusion — these get sent to clients.
+- **Project names were kept short and unchanged where they already existed.** The dashboard resolves
+  pricing tiers by looking up stored `portfolio_used` name strings against the portfolio, so
+  renaming a project silently breaks tier resolution for messages already in the DB. Tests caught
+  this. Also: `portfolio_used` is comma-joined then split, so a project name containing a comma
+  would corrupt it — there's an assert guarding that now.
+
+**Live-verified improvement (no-website angle):** *"I was looking for Aggarwal Sweets online but
+couldn't find a website. I'd like to build one for you using React.js and Node.js, similar to the
+site I built for CodewellImages. This would optimize your shop for Google search in Rohini, Delhi."*
+— **8/10**, every claim true. Compare Phase 6's 4/10 hedge and Phase 7's 7/10.
+
+**Open finding for next phase — the research step doesn't know what Manan can do.** A has-website
+lead (a diagnostics site) produced research pain-points about *page-load speed and image
+optimisation* — generic web-dev observations. Nothing in the portfolio matches that, so the
+relevance floor correctly returned nothing and the message came out proof-less and weak.
+`RESEARCH_PROMPT` asks for "concrete problems a web/AI dev could fix" without ever being told what
+**this** dev actually builds, so it fixates on surface technical issues instead of the automation /
+AI-assistant / RAG problems Manan is strongest at. Feeding his capability areas into the research
+prompt is likely the single highest-leverage next fix for the has-website angle.
+
+**Result:** 57 tests green (unchanged — this phase changed data, not behaviour; two tests did catch
+the rename regression before it shipped).
+
+<!-- Next session: append "## Phase 10 — ..." here. Do not edit sections above. -->

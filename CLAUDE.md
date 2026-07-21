@@ -21,7 +21,14 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 5 (pricing symmetry for Engine A) = COMPLETE.**
 - **Phase 6 (message quality / anti-hallucination) = COMPLETE.**
 - **Phase 7 (two pitch angles) = COMPLETE.**
-- **Phase 8 (portfolio-match relevance floor) = COMPLETE.** 57 tests green total.
+- **Phase 8 (portfolio-match relevance floor) = COMPLETE.**
+- **Phase 9 (real portfolio data) = COMPLETE.** 57 tests green total.
+- **`data/portfolio_context.json` is now built from verified sources** (resume, github.com/Manan0802,
+  manankumar.in), 8 real projects with real stacks and metrics. **Never add employer names, product
+  names or job-role detail to it** — Manan's explicit rule; employer work appears as anonymous
+  capability only. The file IS the enforcement: the writer can only cite what's in it.
+  Project names are lookup keys (the dashboard resolves pricing tiers by matching stored
+  `portfolio_used` strings) — **don't rename them**, and never put a comma in a name.
 - **Relevance floor:** `matcher.MIN_SIMILARITY = 0.30` — measured, not guessed (genuine matches
   score 0.38-0.74 against the real portfolio, stretches/junk ≤0.19). `match_projects()` may return
   fewer than `top_k`, or **none**. **Re-measure the floor if the embedding model changes.**

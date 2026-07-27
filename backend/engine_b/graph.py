@@ -9,7 +9,7 @@ from backend.notify.whatsapp import format_digest, send_whatsapp
 
 def run_engine_b(targets, db, portfolio, deps=None):
     deps = deps or {}
-    research = deps.get("research", lambda t: research_target(t))
+    research = deps.get("research", lambda t: research_target(t, portfolio=portfolio))
     match = deps.get("match", lambda need, projects: match_projects(need, projects))
     write = deps.get("write", lambda t, r, p: write_message(t, r, p))
     notify = deps.get("notify", lambda text: send_whatsapp(text))

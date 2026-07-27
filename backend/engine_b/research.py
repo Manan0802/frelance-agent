@@ -53,8 +53,18 @@ RESEARCH_PROMPT = """You are researching a local business for a freelance pitch.
 Business: {name} ({category}) in {location}.
 Website content (truncated):
 {site}
-{grounding}
-Return ONLY JSON: {{"research_summary": "...", "pain_points": "concrete problems a web/AI dev could fix"}}"""
+{grounding}{capabilities}
+Return ONLY JSON: {{"research_summary": "...", "pain_points": "concrete problems this developer could fix for them"}}"""
+
+CAPABILITY_NOTE = """
+THE DEVELOPER PITCHING THEM BUILDS: {capabilities}.
+
+Look for openings in THOSE areas only — work that is repetitive or manual for this business,
+things a customer can't currently self-serve, questions their staff must answer by hand, and
+anything on their site that is missing rather than merely slow. Do NOT return generic web-perf
+observations (page speed, image sizes, minification) unless the developer's listed capabilities
+actually cover them: those read as nitpicking and this developer cannot pitch them credibly.
+"""
 
 UNGROUNDED_NOTE = """
 NOTE: no website content was retrieved. You know nothing about this business beyond its name,
@@ -63,15 +73,30 @@ operations — say only what follows from the category itself, and keep the summ
 """
 
 
-def research_target(target, fetch=_default_fetch, llm=generate) -> dict:
+def capability_summary(portfolio) -> str:
+    """What this developer can actually deliver, drawn from the portfolio's own
+    pitch_for tags — so research hunts for openings he can credibly pitch."""
+    seen, out = set(), []
+    for p in portfolio.projects:
+        for tag in p.pitch_for:
+            key = tag.lower()
+            if key not in seen:
+                seen.add(key)
+                out.append(tag)
+    return ", ".join(out)
+
+
+def research_target(target, portfolio=None, fetch=_default_fetch, llm=generate) -> dict:
     site = fetch(target.website) if target.website else ""
     has_source = bool(site)
+    caps = capability_summary(portfolio) if portfolio else ""
     prompt = RESEARCH_PROMPT.format(
         name=target.name,
         category=target.category or "business",
         location=target.location or "",
         site=site or "(no website found)",
         grounding="" if has_source else UNGROUNDED_NOTE,
+        capabilities=CAPABILITY_NOTE.format(capabilities=caps) if caps else "",
     )
     raw = llm(prompt)
     out = parse_json(raw, {"research_summary": raw.strip(), "pain_points": ""})

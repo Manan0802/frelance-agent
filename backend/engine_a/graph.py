@@ -33,7 +33,8 @@ def run_engine_a(job_dicts, db, portfolio, deps=None):
         lead = JobLead(
             id=str(uuid.uuid4()), source=job.get("source", ""),
             title=job.get("title", ""), description=job.get("description", ""),
-            url=job.get("url"), budget=job.get("budget"), dedup_hash=h,
+            url=job.get("url"), budget=job.get("budget"),
+            location=job.get("location", ""), dedup_hash=h,
             score=s["score"], skill_matched=",".join(s["skill_matched"]),
             auto_rejected=s["auto_rejected"], raw=json.dumps(job),
         )

@@ -1,11 +1,16 @@
 <article class="card" id="proposal-{{ p.id }}">
   <div class="card-head">
     <span class="card-name">{{ p.name }}</span>
+    {% if p.location %}<span class="pill loc{% if p.high_tier %} high-tier{% endif %}">{{ p.location }}</span>{% endif %}
     <span class="pill score">{{ "%.0f"|format(p.score) }}/10</span>
     <span class="pill status status-{{ p.status }}">{{ p.status }}</span>
   </div>
   <p class="card-draft">{{ p.draft_text }}</p>
+  {% if p.pricing %}
+  <p class="pricing-note">Suggested rate: ${{ p.pricing.suggested_rate_usd_per_hr[0] }}&ndash;${{ p.pricing.suggested_rate_usd_per_hr[1] }}/hr ({{ p.pricing.tier }}-tier) &mdash; reference only, don't quote this in the proposal.</p>
+  {% else %}
   <p class="pricing-note">Suggested rate (geography unknown &mdash; check the posting): US/UK/EU client ${{ p.pricing_high.suggested_rate_usd_per_hr[0] }}&ndash;${{ p.pricing_high.suggested_rate_usd_per_hr[1] }}/hr &middot; elsewhere ${{ p.pricing_other.suggested_rate_usd_per_hr[0] }}&ndash;${{ p.pricing_other.suggested_rate_usd_per_hr[1] }}/hr &mdash; reference only, don't quote this in the proposal.</p>
+  {% endif %}
   {% if p.status != "approved" %}
   <button
     class="approve-btn"

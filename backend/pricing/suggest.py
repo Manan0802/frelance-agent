@@ -9,17 +9,30 @@ NEVER inject this into outreach/proposal text directly — the writer's
 This is for internal/dashboard reference only.
 """
 
+import re
+
 RATE_BANDS_USD_PER_HR = {
     "agentic_ai": (60, 95),
     "full_stack": (40, 70),
 }
 
 HIGH_RATE_GEOGRAPHIES = {
-    "us", "usa", "united states",
-    "uk", "united kingdom",
-    "canada", "australia",
-    "eu", "europe", "germany", "netherlands", "uae",
+    "us", "usa", "united states", "america", "americas", "north america", "northern america",
+    "uk", "united kingdom", "britain",
+    "canada", "australia", "new zealand",
+    "eu", "europe", "emea", "germany", "netherlands", "france", "switzerland",
+    "ireland", "nordics", "scandinavia", "uae", "singapore",
+    # A worldwide posting is open to US/EU clients, so it can pay the high band.
+    "worldwide", "global", "anywhere",
 }
+
+# Job boards give regions, not countries — "Americas, Europe, Israel",
+# "Northern America, Europe, UK" — so match terms inside the string rather than
+# comparing it whole. Word-boundaried, or "us" would hit inside "Belarus".
+_HIGH_TIER = re.compile(
+    r"\b(" + "|".join(sorted((re.escape(g) for g in HIGH_RATE_GEOGRAPHIES), key=len, reverse=True)) + r")\b",
+    re.I,
+)
 
 GEOGRAPHY_MULTIPLIER = {
     "high": 1.0,
@@ -27,8 +40,12 @@ GEOGRAPHY_MULTIPLIER = {
 }
 
 
+def high_tier_geography(client_geography: str) -> bool:
+    return bool(_HIGH_TIER.search(client_geography or ""))
+
+
 def _tier_for(client_geography: str) -> str:
-    return "high" if client_geography.strip().lower() in HIGH_RATE_GEOGRAPHIES else "other"
+    return "high" if high_tier_geography(client_geography) else "other"
 
 
 def suggest_rate(is_agentic: bool, client_geography: str = "") -> dict:

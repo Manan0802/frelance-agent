@@ -52,6 +52,7 @@ class JobLead(Base):
     description: Mapped[str] = mapped_column(Text, default="")
     url: Mapped[str | None] = mapped_column(String, nullable=True)
     budget: Mapped[str | None] = mapped_column(String, nullable=True)
+    location: Mapped[str] = mapped_column(String, default="")
     dedup_hash: Mapped[str] = mapped_column(String, unique=True)
     score: Mapped[float] = mapped_column(Float, default=0.0)
     skill_matched: Mapped[str] = mapped_column(Text, default="")

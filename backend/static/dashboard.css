@@ -219,3 +219,19 @@ h2 {
 
 .approve-btn:hover { opacity: 0.85; }
 .approve-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.pill.loc {
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid var(--line);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* High-currency client (USD/GBP/EUR) — the leads worth prioritising. */
+.pill.loc.high-tier {
+  color: var(--approved);
+  background: var(--approved-bg);
+  border-color: transparent;
+  font-weight: 700;
+}

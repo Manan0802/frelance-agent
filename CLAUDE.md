@@ -29,7 +29,29 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 13 (source expansion, verified) = COMPLETE.** 40 leads/run, 7 inbound sources.
 - **Phase 14 (Engine B volume without Docker) = COMPLETE.**
 - **Phase 15 (strategy corrections: what we sell, to whom, where) = COMPLETE.**
-- **Phase 16 (follow-up sequencing) = COMPLETE.** 201 tests green.
+- **Phase 16 (follow-up sequencing) = COMPLETE.**
+- **Phase 17 (unattended Engine B + humanised copy) = COMPLETE.** 244 tests green.
+- **Engine B runs unattended:** `run_daily.py` (cron entrypoint) rotates cities by date, sources →
+  researches → drafts → queues, and **never contacts a client** (a test asserts it). `--dry-run`
+  checks a city without spending LLM calls.
+- **Batch approve:** `POST /dashboard/approve-all` (button defaults to score 7+) — Manan's chosen
+  middle path over full auto-send. Approve marks ready; it still sends nothing.
+- **Messages must not read like AI** (`backend/engine_b/humanize.py`) — 9 tell-families taken from
+  this project's own live drafts (`leverage`, `seamless`, "I hope this email finds you well",
+  "Can you afford to…"). A flagged draft is regenerated **with the specific tell named** — saying
+  "sound more human" without naming it returns the same text.
+- **MANAN'S DECISIONS (don't silently revert these):** no AI-disclosure line on outbound
+  (`ai_disclosure_enabled=False`, machinery kept behind the flag); he accepted the Germany /
+  UK-sole-trader email exposure after it was flagged.
+- **The no-website segment is a PHONE segment.** Measured: 74% have a street address, 7.5% a phone,
+  **0% an email or socials**. Enrichment APIs infer emails from corporate domains and structurally
+  cannot help a dentist with no domain. gosom's Maps scraper (verified alive, MIT) has phones —
+  Google Business Profiles exist where websites don't. Automation can find/qualify/draft for this
+  segment but **cannot deliver it**.
+- **Postmark / Resend / Mailgun / Brevo forbid cold outreach in their terms** — using them is a
+  terms breach, not a risk. Google Workspace (~₹300-400/mo, separate domain) is the realistic path.
+- **The Gmail MCP can't power automation** — it's a Claude *session* tool, and cron runs with no
+  session. Autonomous sending needs the agent's own Gmail API OAuth.
 - **Follow-ups are built** (`backend/crm/followups.py` + `followup_writer.py`) — they carry ~42%
   of replies. Pure scheduling function over `(sent_at, followups_sent, now)`: 4 steps at
   3/7/16/30 days from the ORIGINAL send, one step per run (never a burst), and replied/won/lost

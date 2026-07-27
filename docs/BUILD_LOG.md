@@ -912,4 +912,89 @@ beauty 38, doctors 29, sports centre 29, company 24, hotel 23, fitness centre 23
 
 **Result:** 201 tests green (178 → 201).
 
-<!-- Next session: append "## Phase 17 — ..." here. Do not edit sections above. -->
+## Phase 17 — Unattended Engine B, and Making It Sound Human (2026-07-27)
+
+**Manan's ask:** *"Engine B should also be automated completely so that, on my behalf only, it will
+help me find clients and pitch for me."* Two research passes ran alongside the build — one on
+reaching the leads, one on sending — and both changed the plan.
+
+### Built
+
+**`run_daily.py` + `backend/automation/daily.py`** — cron entrypoint. Sources businesses for a
+rotating slice of cities, researches each, drafts the pitch, leaves everything queued. **It never
+contacts a client**; the only outbound message is a summary to Manan, and a test asserts
+`sent_to_clients == 0`. City rotation is derived from the date, so cron needs no state file, and
+both the city slice and target count are capped — one city returns ~480 businesses and each costs
+several LLM calls. A dead Overpass mirror is caught and reported rather than silently breaking a job
+nobody watches. `--dry-run` checks a city for free.
+
+**Batch approve** (`POST /dashboard/approve-all`) — Manan's chosen middle path over full auto-send:
+everything up to the send runs unattended, his part collapses to one click. Defaults to score 7+,
+capped, skips already-approved drafts (a second click would otherwise double the CRM records).
+
+**Humanising** (`backend/engine_b/humanize.py`) — the phase's real work, and Manan's stated
+priority: *"proper humanize message chahiye"*. Nine tell-families are detected, taken from this
+project's **own live drafts** rather than a listicle: corporate filler verbs (`leverage`,
+`streamline`, `optimize`), LLM adjectives (`seamless`, `robust`, `elevate`), the delve family,
+boilerplate openers, rhetorical scare questions (*"Can you afford to lose potential customers?"* —
+which appeared in three separate drafts), "not just X but Y", stacked em-dashes, padding
+connectives, and vague benefit-speak.
+
+Detection feeds the regen loop and **names the specific tell** in the rewrite prompt. That detail
+carries the feature: telling a model to "sound more human" without saying what it did wrong returns
+the same text. A clean draft costs no extra call. Live result — *"You're likely handling enquiries
+and bookings manually, given I couldn't find a website for Lone Star Pediatric Dental…"* — 43 words,
+zero tells, 8/10.
+
+### Manan's decisions this phase
+
+**No AI-disclosure line.** The EU AI Act Article 50 research (below) led to a disclosure being built
+and wired in; he reviewed it and said no. It now sits behind `ai_disclosure_enabled` (default
+`False`) rather than being deleted — one setting away if he changes his mind. He also chose to
+accept the Germany/UK-sole-trader exposure. Both are recorded here as his calls, not oversights.
+
+**Batch approve over full auto-send** — after seeing that a human click doesn't prevent bans but
+does catch content bugs.
+
+### Research findings that changed the picture
+
+**Reaching the leads.** OSM gives name + street address and essentially nothing else — a tag census
+of 160 no-website Austin businesses found **74% with a street address, 7.5% with a phone, and zero
+emails or socials**. Enrichment APIs (Prospeo, Hunter, Snov, Apollo, FullEnrich — all key-gated
+when tested) are built to infer `firstname.lastname@company.com` from a corporate domain, so they
+**structurally cannot help a dentist with no domain**. The verified path is **gosom's Maps scraper**
+(confirmed alive: `pushed_at 2026-07-26`, MIT, real source tree, `Entry.Phone` in its struct) —
+business owners claim Google Business Profiles without building websites, so Google has phones
+exactly where OSM doesn't. Its email extraction scrapes `entry.WebSite`, so it cannot produce emails
+for this segment either.
+
+**The honest conclusion: the no-website segment is a PHONE segment.** Automation can find, qualify,
+research and draft for it; it cannot deliver it. That's a ceiling, not a gap to engineer around.
+
+**Sending.** Four of seven providers — **Postmark, Resend, Mailgun, Brevo** — explicitly prohibit
+scraped lists and cold outreach in their own terms. Using them isn't risky, it's a terms breach that
+kills the account. **Amazon SES** is permissive on content but pauses at 0.5% complaints. **Google
+Workspace is the realistic path**, ~₹300-400/month all-in including a separate domain, which
+comfortably fits the project budget. Never from `manankumar.in`.
+
+**Legal, as it applies to our actual list:** US CAN-SPAM permits B2B cold email with conditions.
+**UK PECR treats sole traders as individual subscribers requiring consent** — and Engine B targets
+electricians, plumbers, hairdressers and single-practitioner clinics, so a meaningful slice of the
+UK list falls there. Germany effectively requires consent even B2B. **EU AI Act Article 50 applies
+from August 2026** — next month — requiring disclosure on AI-generated text.
+
+**On the human click:** it does **not** protect against bans, which are driven by complaint rate,
+bounce rate and velocity. It protects **content quality** — and every one of this project's six
+phases of content bugs (invented tech stacks, fabricated business details, stretched portfolio
+matches) was caught by a human reading output.
+
+### Open — the Gmail MCP distinction
+
+Manan suggested sending via the Gmail MCP. Worth recording why that doesn't close the loop: the MCP
+is a **Claude session tool**, available only while he's in a session. Cron runs at 08:00 with no
+session attached, so nothing would send. Autonomous sending needs the agent's **own** Gmail API
+OAuth credentials — a separate integration, gated on the domain/Workspace/warmup setup above.
+
+**Result:** 244 tests green (201 → 244).
+
+<!-- Next session: append "## Phase 18 — ..." here. Do not edit sections above. -->

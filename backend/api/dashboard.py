@@ -110,6 +110,31 @@ def dashboard_approve_message(message_id: str, request: Request, db=Depends(get_
     )
 
 
+@router.post("/dashboard/approve-all")
+def approve_all(body: dict, db=Depends(get_db)):
+    """Manan's chosen middle path: everything up to the send runs unattended,
+    and his part is one action instead of twenty.
+
+    Approving marks a draft ready — it sends nothing. Six phases of live bugs
+    (invented tech, fabricated details, stretched matches) were all caught by a
+    human reading output, which is what this preserves.
+    """
+    min_score = float(body.get("min_score") or 0)
+    limit = int(body.get("limit") or 50)
+
+    pending = (
+        db.query(OutreachMessage)
+        .filter(OutreachMessage.status == "draft")
+        .filter(OutreachMessage.personalization_score >= min_score)
+        .order_by(OutreachMessage.personalization_score.desc())
+        .limit(limit)
+        .all()
+    )
+    for message in pending:
+        approve_message(db, message.id)
+    return {"approved": len(pending), "sent": 0}
+
+
 @router.patch("/dashboard/proposals/{proposal_id}/approve")
 def dashboard_approve_proposal(proposal_id: str, request: Request, db=Depends(get_db)):
     p = approve_proposal(db, proposal_id)

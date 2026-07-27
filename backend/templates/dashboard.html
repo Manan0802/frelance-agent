@@ -27,6 +27,12 @@
     <section>
       <div class="sec-head"><span class="sec-num">B</span><h2>Outbound messages</h2></div>
       <p class="sec-note">Engine B — cold outreach to local businesses, personalized against your portfolio.</p>
+      <button class="approve-btn approve-all"
+              hx-post="/dashboard/approve-all"
+              hx-vals='{"min_score": 7}'
+              hx-swap="none"
+              hx-on::after-request="window.location.reload()"
+      >Approve all (score 7+)</button>
       <div class="card-list" id="messages-list">
         {% if not messages %}
           <p class="empty-state">No outbound messages yet — run Engine B to find targets and draft some.</p>

@@ -40,6 +40,7 @@ class CrmRecord(Base):
     target_name: Mapped[str] = mapped_column(String)
     status: Mapped[str] = mapped_column(String, default="approved")
     sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    followups_sent: Mapped[int] = mapped_column(default=0)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 

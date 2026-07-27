@@ -28,7 +28,15 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 12 (more sources + geography targeting) = COMPLETE.**
 - **Phase 13 (source expansion, verified) = COMPLETE.** 40 leads/run, 7 inbound sources.
 - **Phase 14 (Engine B volume without Docker) = COMPLETE.**
-- **Phase 15 (strategy corrections: what we sell, to whom, where) = COMPLETE.** 178 tests green.
+- **Phase 15 (strategy corrections: what we sell, to whom, where) = COMPLETE.**
+- **Phase 16 (follow-up sequencing) = COMPLETE.** 201 tests green.
+- **Follow-ups are built** (`backend/crm/followups.py` + `followup_writer.py`) — they carry ~42%
+  of replies. Pure scheduling function over `(sent_at, followups_sent, now)`: 4 steps at
+  3/7/16/30 days from the ORIGINAL send, one step per run (never a burst), and replied/won/lost
+  drop out. Each step has its own angle — **never a "just checking in" nudge, that's 15x worse.**
+- **Prompt text is instructions, not a changelog.** A follow-up rule explained itself inside the
+  prompt ("a bare cap produced 11-word telegrams") and the model anchored on that number,
+  emitting 10-18 word messages. Keep rationale in comments; give ranges with a floor, not caps.
 - **WE DO NOT SELL WEBSITES.** Manan: *"khali website se paisa nahi banega"* — the offer is
   AI/automation/software/consulting, an all-rounder range drawn from the 15-project portfolio.
   A missing website is **evidence the business runs manually**, not the product to sell. Never let

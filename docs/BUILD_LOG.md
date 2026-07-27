@@ -865,4 +865,51 @@ Mexico City, Bangkok, Jakarta, Manila and Cairo all correctly price high.
 **Result:** 178 tests green (149 → 178). Austin alone now yields 658 businesses, 386 without a
 website.
 
-<!-- Next session: append "## Phase 16 — ..." here. Do not edit sections above. -->
+## Phase 16 — Follow-Up Sequencing (2026-07-27)
+
+**The biggest gap the Phase 13 conversion research found, and it was unbuilt:** follow-ups carry
+**~42% of all replies**. Every pitch sent without one was leaving most of its return unclaimed.
+Supporting evidence: 3-5 step sequences reply at ~8.3%, 4-7 touches is the usual optimum, and
+"just checking in" notes underperform substantive follow-ups by **15x** on meetings booked.
+
+**Scheduling** (`backend/crm/followups.py`) is a pure function of `(sent_at, followups_sent, now)`
+— no clock inside the logic and no background job; the daily run asks what is due and acts on the
+answer. Four steps at **3 / 7 / 16 / 30 days**, measured from the *original* send so a skipped or
+delayed step doesn't shift everything after it. Two behaviours worth stating:
+
+- A lead untouched for 90 days receives its **next** step, not four messages at once.
+- Anything `replied` / `won` / `lost` / `unsubscribed` / `bounced` drops out. Chasing someone who
+  already answered is the worst touch available.
+
+**Content** (`backend/crm/followup_writer.py`) gives each step a distinct angle rather than a
+nudge: (1) one concrete thing you'd build first and why that one, (2) proof — what the cited
+project actually achieved, (3) a smaller ask (a short call, not the project), (4) a polite close
+that leaves the door open with no final-notice pressure. The original message is passed in so the
+model can avoid restating it, and the Phase 6-8 grounding rules carry over unchanged: no invented
+business detail, no tech outside the cited project's stack, no price.
+
+**Two bugs found by running it live rather than trusting green tests:**
+
+1. **Follow-ups scored 0.0 and 2.0.** `write_followup` inherited `_score`'s `has_source=True`
+   default, which put no-website leads on the *tailoring* rubric — the exact failure Phase 7 split
+   the rubrics to avoid, reintroduced by reusing the helper without thinking about its default.
+   Threaded through; the same leads now score 6-8.
+2. **Output collapsed to 10-18 word telegrams** — *"Let's automate order tracking with LangGraph.
+   Would that interest you?"* The cause was mine: I had written the rationale **inside the prompt**,
+   including the phrase "11-word telegrams", and the model anchored on that number. Rationale moved
+   to a code comment; length given as a **range with a floor** rather than a cap. Output is now
+   31-43 words in full sentences.
+
+   Worth generalising: prompt text is instructions to the model, not a changelog. Explaining *why*
+   a rule exists inside the prompt can actively work against it.
+
+**Schema:** `CrmRecord.followups_sent` added (additive `ALTER`, row counts verified unchanged).
+
+**Also verified this phase** — the Phase 15 Overpass data-quality fixes, against live Austin data:
+`building=yes` junk **50 → 0**, `landuse=commercial` noise **71 → 0**, blank categories
+**238 → 52**, and the category mix now reads like real businesses (hairdresser 46, dentist 44,
+beauty 38, doctors 29, sports centre 29, company 24, hotel 23, fitness centre 23).
+
+**Result:** 201 tests green (178 → 201).
+
+<!-- Next session: append "## Phase 17 — ..." here. Do not edit sections above. -->

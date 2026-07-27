@@ -21,11 +21,25 @@ import time
 
 import httpx
 
+# Measured 2026-07-27 with an identical light query:
+#   overpass-api.de      200 in ~2s
+#   private.coffee       ReadTimeout at 40s
+#   kumi.systems         ReadTimeout at 40s
+#   maps.mail.ru         504
+#   overpass.osm.ch      200 but 0 elements (regional instance — useless here)
+#   overpass.osm.jp      ConnectError, SSL hostname mismatch (broken)
+# Verified-working first; the two timeouts stay as fallbacks since load shifts.
 MIRRORS = [
-    "https://overpass.private.coffee/api/interpreter",
     "https://overpass-api.de/api/interpreter",
-    "https://overpass.osm.jp/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
 ]
+
+# The public endpoint is load-flaky rather than query-flaky: measured live, one
+# query 504'd while a strictly heavier one succeeded seconds later. So failures
+# are retried, not just routed around once.
+MAX_ATTEMPTS = 6
+RETRY_DELAY_SECONDS = 5
 
 # Chosen for margin + manual workload: appointment-booking and document-heavy
 # service businesses. Deliberately excludes restaurants/retail — low margin and
@@ -89,6 +103,7 @@ def fetch_overpass(
     post=_default_post,
     spacing: float = REQUEST_SPACING_SECONDS,
     limit: int = MAX_PER_AREA,
+    retry_delay: float = RETRY_DELAY_SECONDS,
 ) -> list[dict]:
     """areas: [(label, (south, west, north, east)), ...]"""
     cats = CATEGORIES if categories is None else categories
@@ -100,14 +115,19 @@ def fetch_overpass(
             time.sleep(spacing)
         query = _build_query(bbox, cats, offices, limit)
         data = None
-        for mirror in MIRRORS:
+        for attempt in range(MAX_ATTEMPTS):
+            mirror = MIRRORS[attempt % len(MIRRORS)]
             try:
                 data = post(mirror, query)
                 break
             except Exception:
-                log.warning("overpass mirror %s failed for %s; trying next", mirror, area)
+                log.warning("overpass %s failed for %s (attempt %d)", mirror, area, attempt + 1)
+                # Same endpoint can succeed moments later, so wait before
+                # coming back round to it.
+                if retry_delay and attempt >= len(MIRRORS) - 1:
+                    time.sleep(retry_delay)
         if data is None:
-            log.error("all overpass mirrors failed for %s; skipping", area)
+            log.error("overpass: all attempts failed for %s; skipping", area)
             continue
         for el in data.get("elements", []):
             target = _to_target(el, area)

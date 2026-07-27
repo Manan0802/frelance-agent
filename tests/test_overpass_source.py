@@ -76,18 +76,34 @@ def test_contact_prefixed_tags_are_read_too():
 
 
 def test_falls_over_to_the_next_mirror_when_one_fails():
-    """The main endpoint 504s under load; a dead mirror must not cost the run."""
     post, calls = _post(RuntimeError("504 timeout"), {"elements": [_element()]})
     rows = fetch_overpass([("Austin", (0, 0, 1, 1))], post=post, spacing=0)
     assert len(rows) == 1
     assert calls["urls"][0] != calls["urls"][1], "second attempt used a different mirror"
 
 
-def test_area_is_skipped_when_every_mirror_fails():
-    post, _ = _post(*[RuntimeError("down")] * (len(MIRRORS) + 2))
+def test_retries_after_exhausting_the_mirrors():
+    """Measured live: the SAME endpoint 504s on one query and succeeds on a
+    heavier one seconds later — it's load-dependent, not query-dependent. So a
+    failure is worth retrying, not just routing around once."""
+    post, calls = _post(*([RuntimeError("504")] * len(MIRRORS) + [{"elements": [_element()]}]))
+    rows = fetch_overpass([("Austin", (0, 0, 1, 1))], post=post, spacing=0, retry_delay=0)
+    assert len(rows) == 1
+    assert calls["n"] == len(MIRRORS) + 1, "came back round to a mirror it had already tried"
+
+
+def test_area_is_skipped_when_everything_fails():
+    post, calls = _post(*[RuntimeError("down")] * 50)
     rows = fetch_overpass([("Austin", (0, 0, 1, 1)), ("London", (0, 0, 1, 1))],
-                          post=post, spacing=0)
+                          post=post, spacing=0, retry_delay=0)
     assert rows == []
+    assert calls["n"] < 50, "gives up rather than retrying forever"
+
+
+def test_mirrors_are_ordered_with_the_verified_working_one_first():
+    """Measured: overpass-api.de answered 200 in ~2s while private.coffee and
+    kumi.systems both read-timed-out at 40s."""
+    assert "overpass-api.de" in MIRRORS[0]
 
 
 def test_query_targets_the_requested_bbox_and_categories():

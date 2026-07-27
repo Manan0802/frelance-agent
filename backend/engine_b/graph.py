@@ -5,6 +5,7 @@ from backend.engine_b.research import research_target
 from backend.engine_b.matcher import match_projects
 from backend.engine_b.writer import write_message
 from backend.notify.whatsapp import format_digest, send_whatsapp
+from backend.compliance import with_compliance
 
 
 def run_engine_b(targets, db, portfolio, deps=None):
@@ -19,6 +20,9 @@ def run_engine_b(targets, db, portfolio, deps=None):
         r = research(target)
         projects = match(r.get("pain_points") or target.name, portfolio.projects)
         w = write(target, r, projects)
+        # Applied to the STORED draft, not just in transit: the stored text is
+        # what Manan reviews and sends, so the guard has to live here.
+        w["draft_text"] = with_compliance(w["draft_text"], target.location or "")
         msg = OutreachMessage(
             id=str(uuid.uuid4()),
             target_id=target.id,

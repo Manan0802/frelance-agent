@@ -25,7 +25,10 @@ def parse_json(raw: str, default: dict) -> dict:
 
     for c in candidates:
         try:
-            parsed = json.loads(c)
+            # strict=False: models format long values as multi-line lists, which
+            # puts literal newlines inside JSON strings. That's invalid JSON and
+            # the default parser rejects the whole object over it.
+            parsed = json.loads(c, strict=False)
         except json.JSONDecodeError:
             continue
         if isinstance(parsed, dict):

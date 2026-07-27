@@ -49,6 +49,16 @@ def test_returns_default_on_unparseable_text():
     assert parse_json("no json at all", {"a": 0}) == {"a": 0}
 
 
+def test_parses_json_with_raw_newlines_inside_string_values():
+    """Gemini formats long values as multi-line lists, putting literal newlines
+    inside JSON strings. That is invalid JSON and json.loads() rejects it — seen
+    live, emptying pain_points even after the fenced-JSON fix."""
+    raw = '```json\n{\n  "research_summary": "s",\n  "pain_points": "issues:\n    1. manual support\n    2. no booking"\n}\n```'
+    out = parse_json(raw, {})
+    assert "manual support" in out["pain_points"]
+    assert out["research_summary"] == "s"
+
+
 def test_research_recovers_pain_points_from_fenced_json():
     out = research_target(T(), fetch=lambda url: "<html>site</html>", llm=lambda p: FENCED)
     assert out["pain_points"] == "no online ordering"

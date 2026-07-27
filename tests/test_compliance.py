@@ -17,6 +17,7 @@ Two findings from the 2026-07-27 delivery research, both time-sensitive:
    being drafted for a channel that can't lawfully be used.
 """
 
+from backend.config import settings
 from backend.compliance import (
     needs_ai_disclosure, AI_DISCLOSURE, with_compliance, email_permitted,
 )
@@ -45,13 +46,15 @@ def test_unknown_location_does_not_trigger_a_disclosure():
     assert not needs_ai_disclosure("")
 
 
-def test_disclosure_is_appended_to_eu_messages():
+def test_disclosure_is_appended_to_eu_messages(monkeypatch):
+    monkeypatch.setattr(settings, 'ai_disclosure_enabled', True)
     out = with_compliance("Hi, I noticed your booking is by phone.", "Berlin, Germany")
     assert out.startswith("Hi, I noticed your booking is by phone.")
     assert AI_DISCLOSURE in out
 
 
-def test_disclosure_is_not_appended_twice():
+def test_disclosure_is_not_appended_twice(monkeypatch):
+    monkeypatch.setattr(settings, 'ai_disclosure_enabled', True)
     once = with_compliance("Hello.", "Paris, France")
     twice = with_compliance(once, "Paris, France")
     assert twice.count(AI_DISCLOSURE) == 1
@@ -84,7 +87,8 @@ def test_unknown_location_is_emailable():
     assert email_permitted("")
 
 
-def test_engine_b_applies_compliance_to_stored_drafts():
+def test_engine_b_applies_compliance_to_stored_drafts(monkeypatch):
+    monkeypatch.setattr(settings, 'ai_disclosure_enabled', True)
     """The guard has to sit in the pipeline, not just exist as a helper — the
     stored draft is what Manan reviews and sends."""
     from backend.database.connection import engine, SessionLocal
@@ -138,3 +142,12 @@ def test_engine_b_leaves_non_eu_drafts_unchanged():
     stored = db.query(OutreachMessage).filter_by(target_id="t-us").first()
     assert stored.draft_text == "Hi there."
     db.close()
+
+
+def test_disclosure_is_off_by_default():
+    """Manan's decision: no AI-disclosure line on his outbound. The machinery
+    stays behind a flag rather than being deleted, so it's one setting away if
+    he ever wants it."""
+    assert settings.ai_disclosure_enabled is False
+    msg = "Hallo, ich baue Automatisierung."
+    assert with_compliance(msg, "Berlin, Germany") == msg

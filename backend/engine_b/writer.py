@@ -1,15 +1,20 @@
 from backend.llm.gemini import generate
+from backend.engine_b.humanize import ai_tells, HUMAN_RULES
 
 RULES = """Rules: start with the client's problem (never "Hi I am Manan"); reference one
 specific detail; mention one relevant past project; name the tech you'd use — use ONLY tech
 listed in that project's stack above, never invent a tool or framework that isn't listed;
 under 120 words; end with one question; do NOT commit a price; confident peer tone, not
-sycophantic."""
+sycophantic.
+
+""" + HUMAN_RULES
 
 NO_PROJECT_RULES = """Rules: start with the client's problem (never "Hi I am Manan"); reference one
 specific detail; DO NOT mention any past project and DO NOT NAME ANY SPECIFIC TECH, framework or
 tool — you have been given none, and naming one you can't back up loses the client; under 120
-words; end with one question; do NOT commit a price; confident peer tone, not sycophantic."""
+words; end with one question; do NOT commit a price; confident peer tone, not sycophantic.
+
+""" + HUMAN_RULES
 
 
 def rules_for(projects) -> str:
@@ -152,6 +157,18 @@ def _score(msg, llm, has_source=True) -> float:
 def write_message(target, research, projects, llm=generate) -> dict:
     has_source = bool(research.get("has_source"))
     draft = _draft(target, research, projects, llm)
+
+    # A draft that reads like marketing copy gets deleted on sight. Naming the
+    # specific tell matters: "sound more human" without it returns the same text.
+    tells = ai_tells(draft)
+    if tells:
+        draft = _draft(
+            target, research, projects, llm,
+            stricter="\nYour previous draft read like AI marketing copy. It used: "
+                     + "; ".join(tells)
+                     + ". Rewrite it plainly, as one person emailing another.",
+        )
+
     score = _score(draft, llm, has_source)
     if score < 7:
         draft = _draft(

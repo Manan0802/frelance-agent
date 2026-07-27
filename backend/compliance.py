@@ -23,6 +23,8 @@ professional's read before volume sending.
 
 import re
 
+from backend.config import settings
+
 AI_DISCLOSURE = "(This message was drafted with AI assistance.)"
 
 # EU/EEA member states plus the UK, which kept a GDPR/PECR-equivalent regime.
@@ -77,6 +79,8 @@ def email_permitted(location: str) -> bool:
 
 
 def with_compliance(message: str, location: str) -> str:
+    if not settings.ai_disclosure_enabled:
+        return message
     if not needs_ai_disclosure(location) or AI_DISCLOSURE in message:
         return message
     return f"{message}\n\n{AI_DISCLOSURE}"

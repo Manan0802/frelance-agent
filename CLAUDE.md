@@ -27,7 +27,25 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 11 (capability-aware research + Engine A sources wired) = COMPLETE.**
 - **Phase 12 (more sources + geography targeting) = COMPLETE.**
 - **Phase 13 (source expansion, verified) = COMPLETE.** 40 leads/run, 7 inbound sources.
-- **Phase 14 (Engine B volume without Docker) = COMPLETE.** 149 tests green.
+- **Phase 14 (Engine B volume without Docker) = COMPLETE.**
+- **Phase 15 (strategy corrections: what we sell, to whom, where) = COMPLETE.** 178 tests green.
+- **WE DO NOT SELL WEBSITES.** Manan: *"khali website se paisa nahi banega"* — the offer is
+  AI/automation/software/consulting, an all-rounder range drawn from the 15-project portfolio.
+  A missing website is **evidence the business runs manually**, not the product to sell. Never let
+  a prompt drift back to "I'll build you a website".
+- **Targets: 145 categories × 214 cities × 81 countries.** Trades, healthcare, professional
+  services, companies/startups/IT, retail, hospitality, gyms, industry — solo tradespeople through
+  factories and corporates. India has 39 cities (incl. tier-2), and `areas_for(["India"])` selects
+  a whole country.
+- **Pricing tiers are an EXCEPTION LIST, not a rich-country whitelist** — ~120-130 currencies beat
+  the rupee, so 69 of 81 countries price at the premium band. It tracks **prevailing dev rates, not
+  exchange rates**: the yen is weaker per unit than the rupee but Japan pays far more, so Japan is
+  high tier. Lower-rate list includes major **cities** too, since leads carry bare city names
+  (a country-only list quoted a Delhi client the premium band).
+- **Overpass hygiene (all found in live data):** read the category from *every* queried tag family
+  or pitches go out with a blank category; ignore `building=yes`; skip `power=*`/`man_made=*`
+  (substations and treatment plants aren't clients); skip `brand`/`brand:wikidata` (Google/Meta
+  branch offices aren't clients either).
 - **Engine B now sources its own leads with no Docker:** `backend/engine_b/overpass_source.py`
   (OpenStreetMap Overpass — free, no auth, no key) + `backend/engine_b/areas.py` (prebuilt city
   bboxes, defaulting to **US/UK/EU**; Delhi available but not default). `POST /run` with no

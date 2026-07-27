@@ -780,4 +780,89 @@ deliberately excluded: low margin, and already served by aggregators.
 
 **Result:** 149 tests green (128 → 149).
 
-<!-- Next session: append "## Phase 15 — ..." here. Do not edit sections above. -->
+## Phase 15 — Strategy Corrections: What We Sell, To Whom, Where (2026-07-27)
+
+Four corrections from Manan in one session, each of which the code was quietly getting wrong.
+
+### 1. "Khali website se paisa nahi banega"
+
+The no-website angle literally instructed the model to *"offer to build one"* plus an SEO bonus.
+A website is the cheapest thing he sells, and leading with it anchors the entire relationship at
+that price.
+
+Now the missing site is read as **evidence** the business runs manually, and the offer is the
+outcome — an AI assistant, automated booking or intake, whatever the cited past work supports. A
+site may be *how* it's delivered; it is not the pitch. The researched angle likewise reaches for
+the highest-value thing the portfolio supports rather than cosmetic site tweaks, and offer scoring
+now rewards outcomes over deliverable lists.
+
+His framing: *"all-rounder, sara kaam"* — AI, software, consulting, business solutions. The
+portfolio has 15 projects spanning agents, RAG, CV, ML, fintech, dashboards and apps; the pitch
+should reach for whichever fits, not default to the commodity one.
+
+### 2. "Chote se bada sabko" — 10 categories → 145
+
+Targets were five clinic types and five office types. Now seven OSM tag families:
+
+| Family | Covers |
+|---|---|
+| `craft` | electrician, plumber, carpenter, HVAC, roofer, painter, builder, locksmith… |
+| `healthcare` | physiotherapist, psychotherapist, optometrist, laboratory, rehab… |
+| `office` | lawyer, accountant, architect, engineer, recruiter, **company, IT, consulting, research** |
+| `shop` | car repair, furniture, hardware, optician, salon, printing, tailor… |
+| `amenity` | clinics, driving/language schools, banks, coworking, event venues |
+| `tourism` / `leisure` | hotels, guesthouses, gyms, studios |
+| industrial | factories, warehouses, wholesale (via `landuse`/`building`) |
+
+**Queried per tag family, not as one query.** A single query over all of it reliably 504s on a
+load-flaky endpoint, and one failure would cost the whole city rather than one slice. Results are
+deduped, since a firm can match two families.
+
+### 3. "Overseas, India, sab jagah" — 45 cities → 214, across 81 countries
+
+North America 39 · Europe 64 · Middle East 10 · Asia-Pacific 20 · Oceania 10 · South America 15 ·
+Africa 16 · **India 39** (metros plus tier-2: Indore, Nashik, Varanasi, Guwahati, Raipur, Ranchi…).
+
+Cities are stored as a **centre point** with the bbox derived, not four hand-written numbers each.
+At this size that matters: one mistyped coordinate can silently produce an inverted or
+planet-sized box, and Overpass reports that as a *timeout* rather than an error. The longitude
+span also widens by `1/cos(latitude)` — a fixed-degree box covers far less ground in Stockholm
+than in Singapore.
+
+### 4. "~120-130 currencies are stronger than the rupee"
+
+So tiering became an **exception list**, not a whitelist of ~30 Western countries — that whitelist
+was silently discounting most of the world. Now 69 of 81 targeted countries price at the premium
+band; only 12 (India, South Asia, parts of Sub-Saharan Africa) sit on the discounted one.
+
+**A nuance worth keeping:** per-unit currency strength is the *wrong* test. The yen is weaker than
+the rupee per unit, yet Japanese rates are far higher — Manan raised exactly this case. The list
+tracks **prevailing dev rates**, not exchange rates. Tokyo, Seoul, Warsaw, Istanbul, São Paulo,
+Mexico City, Bangkok, Jakarta, Manila and Cairo all correctly price high.
+
+**Two bugs this surfaced, both caught by testing rather than assumed:**
+- `"US"`, `"UK"`, `"UAE"` were being dropped onto the discounted band, because place-detection
+  required 3+ letters.
+- A **Delhi client was quoted the premium band** — the exception list held country names while
+  Engine B targets carry bare city names or street addresses. Major lower-rate cities are listed now.
+
+### Data-quality fixes from the live run (Austin: 148 → 658 businesses)
+
+- **238 of 658 had no category.** Five tag families were added to the query but `_to_target` still
+  read only the original four, so `craft=electrician` and `healthcare=physiotherapist` arrived
+  uncategorised. The writer prompt uses this (`"a {category} in {location}"`), so those pitches were
+  all degraded. Another 50 carried `building=yes`, which classifies nothing — "a yes in Austin"
+  reads worse than saying nothing.
+- **Infrastructure was being pitched.** Industrial land returned electricity substations, power
+  plants, a water treatment works and municipal depots — over half that slice. Elements tagged
+  `power=*` or `man_made=*` are now skipped.
+- **Branded corporate branches dropped.** Broadening to offices pulled in Google, Meta, McKinsey,
+  Accenture and Cloudflare locations. They don't hire solo freelancers by cold email, and OSM omits
+  their `website` tag — so the pipeline would have told Google *"I searched and couldn't find your
+  website"*. Verified on live data: `brand:wikidata` was set on those corporates and on 1 of 31
+  local firms.
+
+**Result:** 178 tests green (149 → 178). Austin alone now yields 658 businesses, 386 without a
+website.
+
+<!-- Next session: append "## Phase 16 — ..." here. Do not edit sections above. -->

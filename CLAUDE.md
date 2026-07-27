@@ -25,7 +25,23 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 9 (real portfolio data) = COMPLETE.**
 - **Phase 10 (GitHub projects + WhatsApp kill switch + JSON parser fix) = COMPLETE.**
 - **Phase 11 (capability-aware research + Engine A sources wired) = COMPLETE.**
-- **Phase 12 (more sources + geography targeting) = COMPLETE.** 97 tests green.
+- **Phase 12 (more sources + geography targeting) = COMPLETE.**
+- **Phase 13 (source expansion, verified) = COMPLETE.** 128 tests green. 40 leads/run, 7 sources.
+- **Sources:** Freelancer.com (**no-auth read API — the docs' "needs OAuth" is about the *bidding*
+  API**; only source with real client project posts, structured currency+budget), Reddit
+  (`.rss` works unauthenticated — `.json` 403s; ~100 client posts/week, biggest volume),
+  Himalayas (~96k jobs, structured `employmentType`), Remotive, Working Nomads, HN-freelance,
+  RemoteOK, WWR.
+- **Filter traps worth remembering:** `[FOR HIRE]` contains "hire" (anchor the tag, don't
+  substring-match, or the pipeline fills with competitor ads); Freelancer.com hourly *rates* and
+  fixed *budgets* need separate floors or junk gets through; a `200` is not proof of a usable feed
+  (PeoplePerHour/JustRemote/Twine return HTML shells).
+- **Verified dead — don't revisit:** Upwork RSS (410), Workana/Wellfound/Clutch (403), Truelancer
+  (429), PeoplePerHour/JustRemote/Twine (JS shells), IndieHackers feed (paywalled).
+- **Deliverability is the real volume ceiling, not lead generation** — new domains need 14-21 days
+  warmup, then ~25-30 cold emails/inbox/day. "Pitch 100" is ~4 days of sending, from a **secondary
+  domain, never his main one**. Warn before any live sending.
+- **Follow-ups carry ~42% of replies and are not built** — the biggest remaining gap.
 - **Targeting priority (Manan's strategy):** volume + **USD/GBP/EUR clients** — two of those beat a
   run of INR work. `JobLead.location` is carried source → lead → proposal; the dashboard
   highlights high-tier (high-currency) leads, and pricing uses the real geography when known.

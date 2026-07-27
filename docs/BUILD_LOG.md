@@ -618,4 +618,92 @@ arbitrary query strings, so "dentist in Austin Texas" works exactly like "bakery
 
 **Result:** 97 tests green (88 → 97; +4 board sources, +5 geography).
 
-<!-- Next session: append "## Phase 13 — ..." here. Do not edit sections above. -->
+## Phase 13 — Source Expansion, Verified (2026-07-27)
+
+Five parallel research passes, all under a hard rule after previous rounds proved stale:
+**verify with an actual request, report the observed status code, and mark anything untested as
+unverified.** That rule paid for itself repeatedly below.
+
+### Sources added (3 → 7)
+
+**Freelancer.com — the biggest find.** The project's own research doc said this needed OAuth plus
+application review. That's the *bidding/write* API; the **active-projects read endpoint answers
+with no credentials at all** (verified `200`). It is also the only source here carrying *actual
+client project posts* rather than employer job ads.
+
+`budget.minimum/maximum` and `currency.code` are structured, so the USD/GBP/EUR priority is an
+exact filter. Both filters are load-bearing:
+- **Currency** — unfiltered the feed is INR-dominated low-rate work.
+- **Budget, on separate scales for hourly vs fixed.** The API's `min_avg_price` applies one number
+  to both, so a live pull returned `USD 2-8` and `USD 15-25` (hourly *rates*) next to
+  `EUR 750-1500` (a project *budget*). On one scale, either the junk gets in or real fixed-price
+  work gets dropped. Live: 34 raw → **10 kept**, all real money — `EUR 750-1500`,
+  `USD 5000-10000`, `EUR 3000-5000`, `USD 10000-20000`.
+
+**Reddit — and a correction to my own earlier finding.** I tested `r/forhire`'s `.json` endpoint,
+got `403`, and told Manan he'd need to register a Reddit app. **Wrong.** The `.rss` path is open
+and unauthenticated (`200`, ~68KB of real content). No app needed — that ask is withdrawn.
+
+Measured live: ~24% of posts are `[HIRING]` (a client with work), the rest `[FOR HIRE]`
+(freelancers advertising — competitors). Across r/forhire + r/hiring that's **~100 client posts a
+week**, more than any other free source here. Two implementation notes: `"[FOR HIRE]"` contains
+`"hire"`, so the tag is anchored to the start of the title — a substring check inverts the meaning
+and fills the pipeline with competitor ads; and Reddit rate-limits this path hard (observed
+`x-ratelimit-remaining: 0` after one request, ~13s reset), so requests are spaced and a failing
+sub is skipped.
+
+**Himalayas** — free, no auth, ~96k jobs, same structured-`employmentType` advantage as Remotive
+over a far larger corpus, plus `locationRestrictions` and salary. Density is the catch: ~5-9%
+contract-shaped, 20 per request regardless of `limit`, so it paginates conservatively.
+
+### Verified dead — stop revisiting these
+
+| Source | Observed | |
+|---|---|---|
+| Upwork RSS | **`410 Gone`** | confirmed twice, independently |
+| Upwork job search, Workana, Wellfound RSS, EU Remote Jobs | `403` | bot-walled |
+| Truelancer | `429` on first request | hostile to automation |
+| PeoplePerHour RSS/HTML, JustRemote, Twine | `200` **but no listings** | JS shells / anti-bot pages, not feeds |
+| RemoteOK RSS | `410` | (its JSON API still works) |
+| IndieHackers feed | `200` | every item paywalled "IH+ Subscribers Only" |
+| Clutch.co, DesignRush, GoodFirms | `403` | Cloudflare-gated |
+| Guru, NoDesk, Pangian, lobste.rs jobs, wip.co | `404` | |
+
+A `200` is not evidence of a usable feed — several of the above return HTML shells while reporting
+success. Check for actual items, not the status code.
+
+### Not code — worth Manan's own time
+
+- **Contra** (0% commission, portfolio-first, lowest barrier for zero reviews), then **A.Team**,
+  **Braintrust**, **Gun.io**. These are apply-and-be-matched networks with no ingestible feed;
+  automating them isn't possible and isn't the point. Note A.Team/Mindrift/Storetasker listings
+  **already reach him** through Remotive/WWR.
+- **Agency subcontracting** — likely the strongest USD channel per unit of effort, because one
+  agency relationship yields repeat work. The directories are Cloudflare-gated, but agencies are
+  just businesses with websites, so **Engine B already handles them** if fed agency names — e.g. a
+  Maps query for "web design agency in Austin".
+- **Discord/Slack** `#jobs` channels — real, but monitoring needs a bot invited per server with
+  admin permission, and most communities prohibit it. Join 3-5 manually; the agent can draft replies.
+
+### Conversion research — evidence that should change the plan
+
+- **"Pitch 100 → land 1-2" is optimistic but reachable.** Median cold-email reply is ~3.4%; small
+  businesses reply at ~7%; lists under 50 recipients average 5.8% vs 2.1% for large sends. 100
+  tightly-targeted SMB pitches ≈ 5-7 replies ≈ **0.5-2 clients**. Sustained, budget 200-400/month.
+- **The real ceiling is deliverability, not generation.** New domains need 14-21 days of warmup
+  with zero cold sends, then **25-30 cold emails per inbox per day** — Gmail/Yahoo/Microsoft enforce
+  <0.3% complaint rates. **So "pitch 100" is ~4 days of sending on one inbox, not one morning**, and
+  it must go from a secondary domain, never his main one. **Flag before any live sending.**
+- **Follow-ups carry ~42% of all replies** — currently not built at all. The single biggest gap.
+- **50-125 word emails reply at 8.2% vs 3.9% for 200+.** The writer's 120-word cap is right;
+  ~90 would be better.
+- **Deep personalisation ~18% vs ~9% for basic templates** — directly validates the grounding and
+  anti-hallucination work, and argues against trading personalisation for volume.
+- **Don't put a Loom in message one** — permission-first, record only for repliers.
+- Everything about the current design that the evidence touches — never auto-send, human approval,
+  no price in message one — is **corroborated**. No change warranted.
+
+**Result:** 128 tests green (97 → 128). Live: 40 leads/run across 7 sources, 18 with a stated
+budget/rate, including `$120-$170/hour` AI engineering and `USD 5000-10000` project work.
+
+<!-- Next session: append "## Phase 14 — ..." here. Do not edit sections above. -->

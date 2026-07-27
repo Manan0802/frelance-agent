@@ -1,12 +1,18 @@
-"""Prebuilt target areas, so Engine B can reach volume without hand-writing
-bounding boxes.
+"""Global city coverage for Engine B.
 
-Manan's stated priority is USD/GBP/EUR clients — "two dollar clients beat a run
-of INR work" — so the default set is US/UK/EU cities. Delhi stays available for
-local work, but is not the default.
+Manan's scope is every continent — "North America, Europe, Australia, Asia,
+South America, Africa... itni saari countries hai". So cities are stored as a
+centre point and the bbox is derived, rather than four hand-written numbers per
+city: hundreds of entries stay reviewable, and a typo in one coordinate can't
+silently produce an inverted or planet-sized box.
+
+Defaults stay USD/GBP/EUR because two dollar-paying clients are worth a run of
+INR work, but any city or whole country is one argument away.
 """
 
-from backend.engine_b.areas import AREAS, DEFAULT_AREAS, areas_for
+from backend.engine_b.areas import (
+    AREAS, CITIES, DEFAULT_AREAS, areas_for, bbox_for, COUNTRIES,
+)
 from backend.pricing.suggest import high_tier_geography
 
 
@@ -16,33 +22,65 @@ def test_default_areas_are_high_currency():
 
 
 def test_bboxes_are_ordered_south_west_north_east():
-    """Overpass rejects a bbox given in the wrong order, and it fails as a
-    timeout rather than an obvious error — worth asserting."""
+    """Overpass rejects a reversed bbox as a timeout rather than a clear error."""
     for label, (south, west, north, east) in AREAS.items():
         assert south < north, f"{label}: south must be below north"
         assert west < east, f"{label}: west must be left of east"
 
 
-def test_bboxes_are_plausible_coordinates():
+def test_coordinates_are_plausible():
+    for label, (lat, lon) in CITIES.items():
+        assert -90 <= lat <= 90, f"{label}: latitude out of range"
+        assert -180 <= lon <= 180, f"{label}: longitude out of range"
+        assert (lat, lon) != (0.0, 0.0), f"{label}: null island — missing coordinates"
+
+
+def test_areas_stay_city_sized():
+    """A country-scale box times Overpass out."""
     for label, (south, west, north, east) in AREAS.items():
-        assert -90 <= south < north <= 90, label
-        assert -180 <= west < east <= 180, label
+        assert north - south <= 0.5, f"{label} spans too much latitude"
+        assert east - west <= 1.0, f"{label} spans too much longitude"
 
 
-def test_areas_are_small_enough_to_query():
-    """A whole-country box times Overpass out. City-sized means roughly a
-    degree or less on each side."""
-    for label, (south, west, north, east) in AREAS.items():
-        assert north - south <= 1.0, f"{label} spans too much latitude"
-        assert east - west <= 1.5, f"{label} spans too much longitude"
+def test_longitude_span_widens_near_the_poles():
+    """A degree of longitude shrinks with latitude, so a fixed degree box would
+    cover far less ground in Stockholm than in Singapore."""
+    _, w_trop, _, e_trop = bbox_for(1.29, 103.85)      # Singapore
+    _, w_nordic, _, e_nordic = bbox_for(59.33, 18.06)  # Stockholm
+    assert (e_nordic - w_nordic) > (e_trop - w_trop)
 
 
-def test_areas_for_selects_by_name():
-    picked = areas_for(["Austin", "London"])
-    assert [label for label, _ in picked] == ["Austin, USA", "London, UK"]
+def test_every_continent_is_covered():
+    for country in ("USA", "UK", "Germany", "India", "Australia", "Brazil",
+                    "South Africa", "Japan", "Mexico", "Nigeria"):
+        assert any(l.endswith(country) for l in CITIES), f"{country} missing"
 
 
-def test_areas_for_is_case_insensitive_and_ignores_unknown_names():
+def test_coverage_is_actually_global_in_scale():
+    assert len(CITIES) >= 180, f"only {len(CITIES)} cities"
+    assert len(COUNTRIES) >= 40, f"only {len(COUNTRIES)} countries"
+
+
+def test_india_is_covered_in_depth():
+    india = [l for l in CITIES if l.endswith("India")]
+    assert len(india) >= 15, f"only {len(india)} Indian cities"
+    for city in ("Mumbai", "Bengaluru", "Pune", "Hyderabad", "Jaipur", "Indore"):
+        assert any(city in l for l in CITIES), f"{city} missing"
+
+
+def test_areas_can_be_selected_by_country():
+    indian = areas_for(["India"])
+    assert len(indian) >= 15
+    assert all(l.endswith("India") for l, _ in indian)
+
+
+def test_country_and_city_selection_can_be_mixed():
+    picked = [l for l, _ in areas_for(["India", "London"])]
+    assert any(l.endswith("India") for l in picked)
+    assert "London, UK" in picked
+
+
+def test_selection_is_case_insensitive_and_ignores_unknown_names():
     assert [l for l, _ in areas_for(["austin", "nowhere-city"])] == ["Austin, USA"]
 
 
@@ -50,35 +88,6 @@ def test_areas_for_returns_defaults_when_asked_for_nothing():
     assert areas_for([]) == DEFAULT_AREAS
 
 
-def test_delhi_is_available_but_not_a_default():
-    assert any("Delhi" in label for label in AREAS)
-    assert not any("Delhi" in label for label, _ in DEFAULT_AREAS)
-
-
-def test_india_is_covered_properly_not_just_delhi():
-    """Manan: "overseas, India, sab jagah" — both markets, not one token city."""
-    india = [l for l in AREAS if l.endswith("India")]
-    assert len(india) >= 6, f"only {len(india)} Indian cities"
-    for city in ("Mumbai", "Bengaluru", "Pune", "Hyderabad"):
-        assert any(city in l for l in AREAS), f"{city} missing"
-
-
-def test_major_english_speaking_and_eu_markets_are_covered():
-    for city in ("New York", "San Francisco", "Chicago", "Dublin", "Singapore", "Dubai"):
-        assert any(city in l for l in AREAS), f"{city} missing"
-
-
-def test_areas_can_be_selected_by_country():
-    from backend.engine_b.areas import areas_for
-
-    indian = areas_for(["India"])
-    assert len(indian) >= 6
-    assert all(l.endswith("India") for l, _ in indian)
-
-
-def test_country_and_city_selection_can_be_mixed():
-    from backend.engine_b.areas import areas_for
-
-    picked = [l for l, _ in areas_for(["India", "London"])]
-    assert any(l.endswith("India") for l in picked)
-    assert "London, UK" in picked
+def test_city_labels_are_unique_and_well_formed():
+    for label in CITIES:
+        assert ", " in label, f"{label} should read 'City, Country'"

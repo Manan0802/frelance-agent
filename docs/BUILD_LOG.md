@@ -501,4 +501,71 @@ prompt remains the highest-leverage next fix.
 
 **Result:** 65 tests green (58 prior + 7 new: 1 WhatsApp kill switch, 6 in new `test_llm_json.py`).
 
-<!-- Next session: append "## Phase 11 — ..." here. Do not edit sections above. -->
+## Phase 11 — Capability-Aware Research + Engine A Actually Reachable (2026-07-27)
+
+**Two halves: finishing the pitch-quality chain, then making Engine A a real pipeline.**
+
+### 1. The research step now knows what Manan builds
+
+`RESEARCH_PROMPT` asked for "problems a web/AI dev could fix" but was never told what *this* dev
+builds, so on has-website leads it returned page-speed and image-size findings — matching nothing
+in the portfolio, so the relevance floor correctly returned no project and the pitch went out with
+no proof. This is why the has-website angle had been weak since Phase 7.
+
+`research_target()` now takes the portfolio and derives a capability summary from the projects'
+own `pitch_for` tags, telling the model to hunt openings in those areas (manual/repetitive work,
+things customers can't self-serve) and explicitly *not* to return web-perf nitpicks this developer
+can't credibly pitch.
+
+**Same diagnostics-lab lead, before and after:**
+| | pain found | matched | pitch |
+|---|---|---|---|
+| before | "slow page loading, image rendering" | *(none)* | "can I help enhance your website's performance?" (7.0) |
+| after | "automate customer support, chatbot for FAQs" | Job Search Agent + Knowledge Compiler Agent | "I'd leverage Python, FastAPI and LangGraph to create an AI-powered chatbot, similar to my Job Search Agent" (8.0) |
+
+**A second JSON bug found on the way.** Phase 10 fixed the ```` ```json ```` fences, yet
+`pain_points` was *still* arriving empty live. Cause: Gemini formats long values as multi-line
+numbered lists, putting **literal newlines inside JSON string values** — invalid JSON, and
+`json.loads()` rejects the whole object over it. Fixed with `strict=False`, which permits control
+characters inside strings. Two distinct malformations, two separate live runs to find them; worth
+assuming there will be a third.
+
+### 2. Engine A had four fetchers and nothing calling them
+
+RemoteOK, WWR, JobSpy and the new HN source were all unreachable from the running app — jobs could
+only arrive by being hand-posted to `/run-inbound`. Added `engine_a/sources.py::collect_jobs()` and
+wired `/run-inbound` to fetch when no jobs are supplied (capped at `MAX_TARGETS`; a board returning
+hundreds of rows would otherwise fire an LLM scoring call per row).
+
+A failing source is logged and skipped rather than fatal — which **paid off on the first live
+run**: WWR raised `ModuleNotFoundError: feedparser`. That dependency was missing from
+`requirements.txt` and had gone unnoticed for nine phases because nothing ever called `fetch_wwr`.
+Added.
+
+**New source — HN "Ask HN: Freelancer? Seeking freelancer?"** (free, no auth). The research doc
+called this "top-tier, trivially automatable". Measured reality: across four threads (Apr–Jul 2026,
+~87 top-level comments) **exactly one** was `SEEKING FREELANCER` (a client hiring); the rest are
+`SEEKING WORK` — other freelancers advertising, i.e. competitors. **Treat it as ~1 lead/month of
+good quality, not a pipeline.** That makes the filter the whole feature: naive ingestion would feed
+~85 competitor ads into the scorer.
+
+**Tag filtering doesn't work on job boards.** RemoteOK posters spray tags for reach — a live
+"Junior Procurement Specialist" carried 45 tags including `python`, `java`, `data science`. Tags
+say nothing about relevance. Filter on **engagement model** instead, which is what project scope
+actually cares about. Titles get a loose match (a title is a deliberate claim about the
+engagement); descriptions need an explicit phrase, because long employment ads mention
+"contract"/"consulting" incidentally — real WWR rows ("Senior Sourcing Analyst", "Director,
+Facility Security Officer") slipped through a looser first attempt.
+
+**Live result:** RemoteOK 0/10 kept, WWR 8/180 kept — and what survives is
+*A.Team "Senior Independent Software Developer ($90–$170/hr)"*, *Mindrift "Freelance Full-Stack
+Developer"*, *Storetasker*. LLM scoring calls per run went from ~190 to 9.
+
+**Verified end-to-end live:** `POST /run-inbound {}` fetches real sources → scores → persists.
+Scorer sanity-checked separately on a known-good vs known-bad job: **92 vs 0**, so the mass
+rejection was correct judgement, not a broken scorer. WhatsApp sends: **0** throughout
+(`WHATSAPP_ENABLED=false`).
+
+**Result:** 88 tests green (70 → 88; +6 HN, +10 sources/filter, +2 API wiring).
+
+<!-- Next session: append "## Phase 12 — ..." here. Do not edit sections above. -->

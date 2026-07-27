@@ -23,7 +23,20 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 7 (two pitch angles) = COMPLETE.**
 - **Phase 8 (portfolio-match relevance floor) = COMPLETE.**
 - **Phase 9 (real portfolio data) = COMPLETE.**
-- **Phase 10 (GitHub projects + WhatsApp kill switch + JSON parser fix) = COMPLETE.** 65 tests green.
+- **Phase 10 (GitHub projects + WhatsApp kill switch + JSON parser fix) = COMPLETE.**
+- **Phase 11 (capability-aware research + Engine A sources wired) = COMPLETE.** 88 tests green.
+- **Engine A now fetches its own leads:** `backend/engine_a/sources.py::collect_jobs()` fans in
+  HN-freelance + RemoteOK + WWR; `POST /run-inbound {}` (no body jobs) triggers a real fetch.
+  A failing source is logged and skipped, never fatal.
+- **Filter job boards on engagement model, NOT tech tags** — RemoteOK posters spray tags for reach
+  (a live procurement job carried 45 tags incl. `python`, `data science`). Titles get a loose
+  freelance/contract match; descriptions need an explicit phrase, since employment ads say
+  "contract"/"consulting" incidentally. Live: 190 rows → 9, and what survives is genuinely
+  contract work.
+- **HN freelancer thread is ~1 lead/month**, not a pipeline — measured, the docs overstated it.
+  ~85 of ~87 comments are `SEEKING WORK` (competitors advertising), not clients hiring.
+- **`research_target()` takes the portfolio** and tells the model what Manan builds, so it hunts
+  automation/AI openings instead of generic page-speed nitpicks that match no portfolio project.
 - **`WHATSAPP_ENABLED=false` is set in `.env`** — live runs will NOT message Manan. Flip to `true`
   only when he asks; testing used to spam his phone.
 - **All LLM JSON must go through `backend/llm/parse.py::parse_json()`** — Gemini fences its JSON in

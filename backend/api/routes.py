@@ -9,6 +9,7 @@ from backend.database.models import OutreachMessage, InboundProposal, CrmRecord
 from backend.engine_b.ingest import ingest_targets
 from backend.engine_b.graph import run_engine_b
 from backend.engine_a.graph import run_engine_a
+from backend.engine_a.sources import collect_jobs
 from backend.portfolio.context import load_portfolio
 
 router = APIRouter()
@@ -60,8 +61,13 @@ def run(body: dict, db=Depends(get_db), _=Depends(check_api_key)):
 
 @router.post("/run-inbound")
 def run_inbound(body: dict, db=Depends(get_db), _=Depends(check_api_key)):
-    jobs = body.get("jobs", [])
-    if len(jobs) > MAX_TARGETS:
+    jobs = body.get("jobs")
+    if jobs is None:
+        # No jobs supplied: fetch from the registered sources. Truncated rather
+        # than rejected — a board returning hundreds of rows would otherwise
+        # fire an LLM scoring call per row.
+        jobs = collect_jobs()[:MAX_TARGETS]
+    elif len(jobs) > MAX_TARGETS:
         raise HTTPException(400, f"too many jobs (max {MAX_TARGETS})")
     pf = load_portfolio("data/portfolio_context.json")
     props = run_engine_a(jobs, db, pf, deps=_INBOUND_DEPS or None)

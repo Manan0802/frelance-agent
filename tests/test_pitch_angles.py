@@ -37,11 +37,16 @@ def _capture(research):
     return seen
 
 
-def test_no_website_angle_offers_to_build_plus_seo():
+def test_no_website_angle_uses_the_absence_as_the_hook():
+    """Phase 14 correction: this used to assert an "offer to build a site + SEO
+    bonus" framing. Manan's position is that a website is the cheapest thing he
+    sells and anchoring on it caps the relationship — the missing site is
+    EVIDENCE the business runs manually, and the offer should be the business
+    outcome. The hook itself survives; the offer changed."""
     seen = _capture({"research_summary": "", "pain_points": "", "has_source": False})
     p = seen["draft_prompt"].lower()
     assert "could not find" in p or "couldn't find" in p, "must use the searched-and-found-nothing hook"
-    assert "seo" in p or "google" in p, "must include the SEO/Google-visibility bonus"
+    assert "manual" in p, "the absence should be read as evidence of manual operations"
 
 
 def test_no_website_angle_still_forbids_inventing_business_details():

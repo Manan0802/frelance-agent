@@ -28,19 +28,27 @@ Relevant past work you can cite: {projects}
 
 NO_WEBSITE_ANGLE = """
 ANGLE — this business appears to have NO WEBSITE. You searched and could not find one. That
-absence is the ONE thing you actually verified, and it is the hook: say you looked and couldn't
-find a site, then offer to build one, and mention the bonus that you'd optimise it so they show
-up in Google search for their area.
+absence is the ONE thing you actually verified, so it opens the message — but read it as EVIDENCE,
+not as the product: a business with no web presence is almost certainly running enquiries,
+bookings and follow-ups MANUALLY, by phone and on paper.
+
+Pitch the outcome that fixes, drawn from your past work above — an AI assistant that answers
+enquiries, automated booking or intake, a system that stops missed calls turning into lost
+customers, whatever your cited work actually supports. A website may be part of how you deliver
+it, but do NOT make "I'll build you a website" the offer: that is the cheapest thing you sell and
+it anchors the whole relationship at that price.
+
 Do NOT invent or assert anything else about them (what they sell, their customers, their history,
 their current setup) — you know none of it, and a believable-sounding guess that turns out wrong
-loses the client. The offer carries this message, not fake insight.
+loses the client.
 """
 
 RESEARCHED_ANGLE = """
 ANGLE — this business ALREADY HAS A WEBSITE, and the notes above come from actually reading it.
-Do NOT offer to "build them a website". Pitch from what you genuinely observed: what's missing or
-weak on it, or what you could add (automation, an AI assistant, online ordering, better search
-visibility) — whichever your cited past work actually supports.
+Do NOT offer to build them a website. Pitch from what you genuinely observed, reaching for the
+highest-value thing your cited past work supports — an AI assistant, workflow or data automation,
+a custom tool or app, ML/prediction, a dashboard — not cosmetic site tweaks. Lead with what it
+does for their business, not with the technology.
 """
 
 OFFER_SCORE_PROMPT = """Score this cold outreach message 0-10 on how strong and concrete its
@@ -50,11 +58,12 @@ business-specific insight — there is none to be had, and inventing some would 
 Lowers the score:
 - vague benefit language ("grow your business", "boost your presence") with nothing concrete
 - claiming to know things about the business it cannot know
+- leading with a commodity deliverable ("I'll build you a website") rather than an outcome
 - no clear next step
 
 Raises the score:
-- a specific, named deliverable
-- the Google/search-visibility bonus made concrete
+- a concrete OUTCOME for the business — work it stops doing by hand, time or customers it saves
+- a specific, named thing that would be built to achieve it
 - credible proof (a real past project) and a clear, low-friction ask
 
 0-3 = vague, no real offer. 4-6 = an offer, but woolly.

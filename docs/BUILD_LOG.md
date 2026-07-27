@@ -568,4 +568,54 @@ rejection was correct judgement, not a broken scorer. WhatsApp sends: **0** thro
 
 **Result:** 88 tests green (70 → 88; +6 HN, +10 sources/filter, +2 API wiring).
 
-<!-- Next session: append "## Phase 12 — ..." here. Do not edit sections above. -->
+## Phase 12 — More Sources + Geography Targeting (2026-07-27)
+
+**Manan's strategy, in his words:** pitch ~100 to land one, and weight hard toward countries that
+pay in dollars/pounds/euros — *"do clients bhi mille toh utna earn"*. Two USD clients beat a run of
+INR work. So: more sources, and make currency visible so he can prioritise.
+
+**New sources (free, no auth):**
+- **Remotive** — the best board here by some distance. It exposes a **structured `job_type`**
+  (`full_time` / `contract` / `freelance` / `part_time`), so its freelance filter is *exact*
+  instead of the regex guess every other board needs; it's registered freelance-by-default for
+  that reason. Also carries `salary` and `candidate_required_location`.
+- **Working Nomads** — carries a location, no engagement field, so the shared filter screens it.
+
+**Reddit is blocked.** `r/forhire`'s public `.json` endpoint now returns **403** without OAuth, on
+both `www.` and `old.` hosts. The research doc listed it as a free API. It now needs a registered
+Reddit app (client id/secret) before it can be built — **that's on Manan**, flagged to him.
+
+**Geography now survives the pipeline.** `JobLead` had no `location` column, so inbound proposals
+always showed both rate bands labelled "geography unknown" — hiding the exact thing he's targeting
+on. Added `JobLead.location` (additive `ALTER`, row counts verified before/after), threaded
+source → lead → proposal, and the dashboard now shows a location pill highlighted when the client
+is high-tier. Where a source genuinely has no location (the HN thread), the honest both-bands
+treatment stays.
+
+**Tier matching had to change with it.** `_tier_for()` compared the whole string against a country
+set, but boards give *regions*: "Americas, Europe, Israel", "Northern America, Europe, UK". Nothing
+ever matched. Now word-boundaried term matching **inside** the string — boundaried because a bare
+`us` would otherwise hit inside "Belarus". "Worldwide" counts as high-tier, since such a posting is
+open to US/EU clients.
+
+**Live result:** leads per run **9 → 21**, of which **12 flagged high-currency**, with real rates
+now visible:
+
+| | |
+|---|---|
+| Senior Independent **AI Engineer / Architect** | Americas+Europe, **$120–$170/hour** |
+| Senior Independent Software Developer | Americas+Europe, $90–$150/hour |
+| A.Team, Mindrift, Storetasker | contract dev work |
+
+The AI Engineer listing is squarely Manan's profile at his target rate.
+
+**Honest read on volume:** these boards give ~20 freelance leads per run, not 100. Inbound boards
+are a **low-volume/high-value** channel — the $120–170/hr listings are worth pursuing individually.
+Hitting "pitch 100" needs **Engine B outbound volume**, which currently depends on the gosom Maps
+scraper running locally in Docker. Pointing Engine B at businesses in USD/GBP/EUR cities is the
+next real lever, and nothing in the code prevents it — `maps_source.fetch_google_maps()` takes
+arbitrary query strings, so "dentist in Austin Texas" works exactly like "bakery in Delhi".
+
+**Result:** 97 tests green (88 → 97; +4 board sources, +5 geography).
+
+<!-- Next session: append "## Phase 13 — ..." here. Do not edit sections above. -->

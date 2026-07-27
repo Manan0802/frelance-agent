@@ -24,7 +24,18 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 8 (portfolio-match relevance floor) = COMPLETE.**
 - **Phase 9 (real portfolio data) = COMPLETE.**
 - **Phase 10 (GitHub projects + WhatsApp kill switch + JSON parser fix) = COMPLETE.**
-- **Phase 11 (capability-aware research + Engine A sources wired) = COMPLETE.** 88 tests green.
+- **Phase 11 (capability-aware research + Engine A sources wired) = COMPLETE.**
+- **Phase 12 (more sources + geography targeting) = COMPLETE.** 97 tests green.
+- **Targeting priority (Manan's strategy):** volume + **USD/GBP/EUR clients** — two of those beat a
+  run of INR work. `JobLead.location` is carried source → lead → proposal; the dashboard
+  highlights high-tier (high-currency) leads, and pricing uses the real geography when known.
+- **Sources now:** HN-freelance, **Remotive** (best — structured `job_type`, salary, location),
+  **Working Nomads**, RemoteOK, WWR. Live: 21 leads/run, 12 high-currency.
+- **Reddit `r/forhire` is 403 without OAuth** — the research doc's "free API" claim is stale.
+  Needs Manan to register a Reddit app before it can be built.
+- **Inbound boards are low-volume/high-value** (~20/run, incl. $120-170/hr listings). "Pitch 100"
+  volume must come from **Engine B outbound** — and `maps_source.fetch_google_maps()` takes any
+  query string, so pointing it at USD cities ("dentist in Austin Texas") is the next lever.
 - **Engine A now fetches its own leads:** `backend/engine_a/sources.py::collect_jobs()` fans in
   HN-freelance + RemoteOK + WWR; `POST /run-inbound {}` (no body jobs) triggers a real fetch.
   A failing source is logged and skipped, never fatal.

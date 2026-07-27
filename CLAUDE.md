@@ -26,7 +26,19 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 10 (GitHub projects + WhatsApp kill switch + JSON parser fix) = COMPLETE.**
 - **Phase 11 (capability-aware research + Engine A sources wired) = COMPLETE.**
 - **Phase 12 (more sources + geography targeting) = COMPLETE.**
-- **Phase 13 (source expansion, verified) = COMPLETE.** 128 tests green. 40 leads/run, 7 sources.
+- **Phase 13 (source expansion, verified) = COMPLETE.** 40 leads/run, 7 inbound sources.
+- **Phase 14 (Engine B volume without Docker) = COMPLETE.** 149 tests green.
+- **Engine B now sources its own leads with no Docker:** `backend/engine_b/overpass_source.py`
+  (OpenStreetMap Overpass — free, no auth, no key) + `backend/engine_b/areas.py` (prebuilt city
+  bboxes, defaulting to **US/UK/EU**; Delhi available but not default). `POST /run` with no
+  targets fetches them. One Austin bbox = 76 businesses, 35 with **no website** — the best pitch
+  segment, since the absence is a verified fact.
+- **Overpass gotchas (measured, don't re-learn):** use `overpass-api.de` first — `private.coffee`
+  and `kumi.systems` read-time-out, `overpass.osm.jp` has a broken SSL cert, `overpass.osm.ch`
+  returns 0 elements. The 504s are **load-flaky, not query-flaky** (a heavier query succeeded
+  seconds after a lighter one failed), so **retry with backoff — don't shrink the query**.
+- **Overpass gives reach, not contacts** — phone coverage was 0/37 on no-website rows. Contact
+  enrichment is still an open problem.
 - **Sources:** Freelancer.com (**no-auth read API — the docs' "needs OAuth" is about the *bidding*
   API**; only source with real client project posts, structured currency+budget), Reddit
   (`.rss` works unauthenticated — `.json` 403s; ~100 client posts/week, biggest volume),

@@ -706,4 +706,62 @@ success. Check for actual items, not the status code.
 **Result:** 128 tests green (97 → 128). Live: 40 leads/run across 7 sources, 18 with a stated
 budget/rate, including `$120-$170/hour` AI engineering and `USD 5000-10000` project work.
 
-<!-- Next session: append "## Phase 14 — ..." here. Do not edit sections above. -->
+## Phase 14 — Engine B Volume Without Docker (2026-07-27)
+
+**The problem this solves.** Engine B is where "pitch 100" volume has to come from — inbound
+boards give ~40 leads/run and no more. But its only lead source was the gosom Maps scraper, which
+needs a Docker container running. So in practice Engine B had no usable source at all.
+
+**OpenStreetMap Overpass** answers it: free, no auth, no key, **no Docker**, global.
+
+Measured live — one Austin bbox across dentists / lawyers / accountants / estate agents returned
+**76 named businesses, 35 of them with no website**. That no-website half is the *best* segment,
+not waste: "I searched and couldn't find your site" is a **verified fact** rather than an
+inference, and that pitch already scores 8/10 (Phase 7). Overpass states the absence definitively.
+
+**Also shipped:** prebuilt city bounding boxes (`engine_b/areas.py`) defaulting to US/UK/EU
+markets — Delhi available but deliberately not a default — and `POST /run` with no targets now
+fetches them. Previously targets could *only* be hand-posted, which cannot reach volume by
+definition. Capped at `MAX_TARGETS`; one city returns ~200 businesses and each costs several LLM
+calls.
+
+**Honest limit:** Overpass gives reach and qualification, not contact details. Phone coverage was
+**0/37** on the no-website rows in the live sample. Getting to a human is a separate problem
+(the enrichment backlog: Prospeo/FullEnrich free tiers).
+
+### Debugging the first live run — two wrong assumptions, both corrected by measurement
+
+The first 4-city run failed on London and Dublin with all mirrors exhausted. Rather than guess,
+I measured every candidate mirror with an identical light query:
+
+| Mirror | Result |
+|---|---|
+| **overpass-api.de** | **`200` in ~2s** |
+| overpass.private.coffee | ReadTimeout at 40s |
+| overpass.kumi.systems | ReadTimeout at 40s |
+| maps.mail.ru | `504` |
+| overpass.osm.ch | `200` but **0 elements** (regional instance) |
+| overpass.osm.jp | ConnectError — **SSL hostname mismatch, broken** |
+
+**Wrong assumption 1: the mirror order.** It led with `private.coffee` (which the research pass had
+found working, and which now times out) and listed a mirror whose certificate is broken. Reordered
+to put the verified-working endpoint first; dropped the dead ones.
+
+**Wrong assumption 2: that heavy queries caused the 504s.** They don't. A 5-category query `504`'d
+while a strictly *heavier* 6-clause query succeeded seconds later **on the same endpoint**. The
+public service is **load-flaky, not query-flaky** — which means the correct response is retry with
+backoff, not a smaller query. Attempts now cycle back round the mirrors instead of giving up after
+one pass. Worth remembering generally: an intermittent failure that correlates with nothing in your
+input is a load problem, and shrinking your request is treating the wrong cause.
+
+### Target categories, chosen on evidence
+
+`dentist, doctors, clinic, veterinary, driving_school` + offices `lawyer, accountant, estate_agent,
+insurance, financial`. Picked for margin plus manual workload — appointment booking and
+document-heavy intake is exactly what an automation pitch lands on, and these showed the highest
+no-website rates in the live data (~38/49 for London dentists). Restaurants and retail are
+deliberately excluded: low margin, and already served by aggregators.
+
+**Result:** 149 tests green (128 → 149).
+
+<!-- Next session: append "## Phase 15 — ..." here. Do not edit sections above. -->

@@ -68,6 +68,43 @@ def test_unnamed_elements_are_dropped():
     assert len(rows) == 1
 
 
+def test_category_is_read_from_every_tag_family():
+    """A live Austin run came back with 238 of 658 businesses having category
+    None: five new tag families were added to the query but _to_target still
+    only read amenity/office/landuse/building. Category feeds the writer prompt
+    ("a {category} in {location}"), so a blank one degrades every pitch."""
+    for tag, value in [("craft", "electrician"), ("healthcare", "physiotherapist"),
+                       ("shop", "car_repair"), ("tourism", "hotel"),
+                       ("leisure", "fitness_centre"), ("office", "lawyer"),
+                       ("amenity", "dentist")]:
+        post, _ = _post({"elements": [{"tags": {"name": "X", tag: value}}]})
+        rows = fetch_overpass([("Austin", (0, 0, 1, 1))], post=post, spacing=0)
+        assert rows[0]["category"] == value, f"{tag}={value} lost"
+
+
+def test_infrastructure_is_not_treated_as_a_business():
+    """Querying industrial land returned electricity substations, power plants,
+    a water treatment plant and municipal maintenance depots in one live Austin
+    sample. None of them buys freelance software, and each would burn LLM calls
+    to produce a pitch that could never be sent."""
+    post, _ = _post({"elements": [
+        {"tags": {"name": "Mueller Substation", "power": "substation", "landuse": "industrial"}},
+        {"tags": {"name": "Holly Power Plant", "power": "plant", "landuse": "industrial"}},
+        {"tags": {"name": "Ullrich Water Treatment Plant", "man_made": "water_works"}},
+        {"tags": {"name": "Fox Service Company", "landuse": "industrial"}},
+    ]})
+    rows = fetch_overpass([("Austin", (0, 0, 1, 1))], post=post, spacing=0)
+    assert [r["name"] for r in rows] == ["Fox Service Company"]
+
+
+def test_meaningless_building_values_are_not_used_as_a_category():
+    """`building=yes` just means "this is a building" — 50 live rows carried it.
+    Pitching "a yes in Austin" is worse than saying nothing."""
+    post, _ = _post({"elements": [{"tags": {"name": "X", "building": "yes"}}]})
+    rows = fetch_overpass([("Austin", (0, 0, 1, 1))], post=post, spacing=0)
+    assert rows[0]["category"] is None
+
+
 def test_contact_prefixed_tags_are_read_too():
     """OSM has two conventions for the same fact."""
     post, _ = _post({"elements": [_element(

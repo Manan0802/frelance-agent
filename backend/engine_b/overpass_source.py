@@ -157,6 +157,25 @@ def _address(tags: dict) -> str:
     return ", ".join(p for p in parts if p)
 
 
+# Values that classify nothing. `building=yes` merely means "a building", and a
+# live run produced 50 rows carrying it — "a yes in Austin" reads worse in a
+# pitch than saying nothing at all.
+_EMPTY_CATEGORY_VALUES = {"yes", "true", "commercial", "retail", "office"}
+
+
+def _category(tags: dict) -> str | None:
+    """Read the category from whichever family matched. Every tag family in the
+    query needs to be here: a live run left 238 of 658 businesses with category
+    None because the newer families were queried but never read back, and the
+    writer prompt uses this ("a {category} in {location}")."""
+    for tag in ("amenity", "office", "craft", "healthcare", "shop",
+                "tourism", "leisure", "landuse", "building"):
+        value = tags.get(tag)
+        if value and value.lower() not in _EMPTY_CATEGORY_VALUES:
+            return value
+    return None
+
+
 def _to_target(el: dict, area: str) -> dict | None:
     tags = el.get("tags") or {}
     name = tags.get("name")
@@ -169,14 +188,18 @@ def _to_target(el: dict, area: str) -> dict | None:
     # McKinsey, Accenture and Cloudflare, and on 1 of 31 small local firms.
     if tags.get("brand") or tags.get("brand:wikidata"):
         return None
+    # Querying industrial land returns electricity substations, power plants,
+    # water treatment works and municipal depots — infrastructure, not
+    # businesses that buy software. A live Austin sample was over half these.
+    if tags.get("power") or tags.get("man_made"):
+        return None
     return {
         "name": name,
         "address": _address(tags) or area,
         "website": tags.get("website") or tags.get("contact:website") or None,
         "phone": tags.get("phone") or tags.get("contact:phone") or None,
         "email": tags.get("email") or tags.get("contact:email") or None,
-        "category": (tags.get("amenity") or tags.get("office")
-                     or tags.get("landuse") or tags.get("building")),
+        "category": _category(tags),
     }
 
 

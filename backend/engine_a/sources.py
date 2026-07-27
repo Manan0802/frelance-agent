@@ -13,6 +13,8 @@ import re
 
 from backend.engine_a.hn_source import fetch_hn_freelance
 from backend.engine_a.remoteok import fetch_remoteok
+from backend.engine_a.remotive import fetch_remotive
+from backend.engine_a.workingnomads import fetch_working_nomads
 from backend.engine_a.weworkremotely import fetch_wwr
 
 log = logging.getLogger(__name__)
@@ -21,6 +23,8 @@ DEFAULT_TAGS = ["python", "ai", "machine-learning", "react", "node", "fullstack"
 
 SOURCES = {
     "hn_freelance": fetch_hn_freelance,
+    "remotive": fetch_remotive,
+    "workingnomads": fetch_working_nomads,
     "remoteok": lambda: fetch_remoteok(DEFAULT_TAGS),
     "wwr": fetch_wwr,
 }
@@ -48,7 +52,7 @@ _BODY_SIGNAL = re.compile(
     r"|short[- ]term (?:contract|project|engagement))\b", re.I
 )
 # Sources that are freelance by definition; their posts rarely say the word.
-FREELANCE_BY_DEFAULT = {"hn_freelance"}
+FREELANCE_BY_DEFAULT = {"hn_freelance", "remotive"}
 
 
 def is_freelance(job: dict) -> bool:

@@ -8,6 +8,8 @@ from backend.database.connection import get_db
 from backend.database.models import OutreachMessage, InboundProposal, CrmRecord
 from backend.engine_b.ingest import ingest_targets
 from backend.engine_b.graph import run_engine_b
+from backend.engine_b.overpass_source import fetch_overpass
+from backend.engine_b.areas import areas_for
 from backend.engine_a.graph import run_engine_a
 from backend.engine_a.sources import collect_jobs
 from backend.portfolio.context import load_portfolio
@@ -39,8 +41,14 @@ def check_api_key(x_api_key: str | None = Header(default=None)) -> None:
 
 @router.post("/run")
 def run(body: dict, db=Depends(get_db), _=Depends(check_api_key)):
-    incoming = body.get("targets", [])
-    if len(incoming) > MAX_TARGETS:
+    incoming = body.get("targets")
+    if incoming is None:
+        # No targets supplied: pull businesses from OpenStreetMap for the
+        # requested cities (default: USD/GBP/EUR markets). Truncated rather
+        # than rejected — one city returns ~200 businesses and each costs
+        # several LLM calls.
+        incoming = fetch_overpass(areas_for(body.get("areas", [])))[:MAX_TARGETS]
+    elif len(incoming) > MAX_TARGETS:
         raise HTTPException(400, f"too many targets (max {MAX_TARGETS})")
     targets = ingest_targets(incoming, db)
     pf = load_portfolio("data/portfolio_context.json")

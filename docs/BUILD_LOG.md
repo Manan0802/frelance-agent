@@ -725,9 +725,25 @@ fetches them. Previously targets could *only* be hand-posted, which cannot reach
 definition. Capped at `MAX_TARGETS`; one city returns ~200 businesses and each costs several LLM
 calls.
 
-**Honest limit:** Overpass gives reach and qualification, not contact details. Phone coverage was
-**0/37** on the no-website rows in the live sample. Getting to a human is a separate problem
-(the enrichment backlog: Prospeo/FullEnrich free tiers).
+**Live volume, 4 default cities, one run: 733 businesses — 422 with no website.** Seven times the
+"pitch 100" target. Category mix: 198 dentists, 136 estate agents, 136 doctors, 94 lawyers, 63
+clinics, plus insurance/accountants/veterinary.
+
+**The honest limit, and it's a real strategic tension.** Measured precisely on Austin (148
+businesses):
+
+| Segment | Has a phone number |
+|---|---|
+| **No website** (the best segment to *pitch*) | **7/79 — 9%** |
+| Has a website | 60/69 — **87%** |
+
+**The businesses easiest to pitch are the hardest to reach.** That inverse correlation makes sense —
+a business absent from the web is absent from OSM's contact tags too — but it means the no-website
+angle, which scores 8/10, currently has no delivery channel for ~91% of its leads. Options, none
+built: the gosom Maps scraper (has phone numbers, needs Docker) as a complement for exactly this
+segment; contact-form submission for the has-website half; or the enrichment backlog
+(Prospeo/FullEnrich free tiers). **Worth deciding before scaling outbound volume — generating 422
+unreachable pitches is not progress.**
 
 ### Debugging the first live run — two wrong assumptions, both corrected by measurement
 

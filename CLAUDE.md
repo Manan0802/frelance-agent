@@ -37,8 +37,13 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
   and `kumi.systems` read-time-out, `overpass.osm.jp` has a broken SSL cert, `overpass.osm.ch`
   returns 0 elements. The 504s are **load-flaky, not query-flaky** (a heavier query succeeded
   seconds after a lighter one failed), so **retry with backoff — don't shrink the query**.
-- **Overpass gives reach, not contacts** — phone coverage was 0/37 on no-website rows. Contact
-  enrichment is still an open problem.
+- **Live volume: 733 businesses / 4 cities / one run, 422 with no website** — 7x the "pitch 100" target.
+- **Overpass gives reach, not contacts — and the correlation is inverse.** Measured on Austin:
+  no-website rows have a phone only **9%** of the time (7/79), has-website rows **87%** (60/69).
+  **The best segment to pitch is the hardest to reach.** No delivery channel exists yet for ~91%
+  of no-website leads — gosom Maps (has phones, needs Docker), contact-form submission, or
+  enrichment are the options. **Decide this before scaling outbound; 422 unreachable pitches
+  aren't progress.**
 - **Sources:** Freelancer.com (**no-auth read API — the docs' "needs OAuth" is about the *bidding*
   API**; only source with real client project posts, structured currency+budget), Reddit
   (`.rss` works unauthenticated — `.json` 403s; ~100 client posts/week, biggest volume),

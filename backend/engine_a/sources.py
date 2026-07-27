@@ -11,6 +11,7 @@ one dead board must not take the morning's run down with it.
 import logging
 import re
 
+from backend.engine_a.freelancer import fetch_freelancer
 from backend.engine_a.hn_source import fetch_hn_freelance
 from backend.engine_a.remoteok import fetch_remoteok
 from backend.engine_a.remotive import fetch_remotive
@@ -22,6 +23,7 @@ log = logging.getLogger(__name__)
 DEFAULT_TAGS = ["python", "ai", "machine-learning", "react", "node", "fullstack"]
 
 SOURCES = {
+    "freelancer": fetch_freelancer,
     "hn_freelance": fetch_hn_freelance,
     "remotive": fetch_remotive,
     "workingnomads": fetch_working_nomads,
@@ -52,7 +54,7 @@ _BODY_SIGNAL = re.compile(
     r"|short[- ]term (?:contract|project|engagement))\b", re.I
 )
 # Sources that are freelance by definition; their posts rarely say the word.
-FREELANCE_BY_DEFAULT = {"hn_freelance", "remotive"}
+FREELANCE_BY_DEFAULT = {"hn_freelance", "remotive", "freelancer"}
 
 
 def is_freelance(job: dict) -> bool:

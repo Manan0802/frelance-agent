@@ -35,9 +35,15 @@ MIRRORS = [
     "https://overpass.kumi.systems/api/interpreter",
 ]
 
-# The public endpoint is load-flaky rather than query-flaky: measured live, one
-# query 504'd while a strictly heavier one succeeded seconds later. So failures
-# are retried, not just routed around once.
+# Re-measured 2026-07-28 with the real query, and it revises the note above:
+#   overpass-api.de   504 at 13s on the real query, but 200 in 2s on a toy one
+#   kumi.systems      200, 200 elements, at 93s
+#   maps.mail.ru      504 at 37s
+#   private.coffee    ReadTimeout at 96s
+#   overpass.osm.ch   200 but 0 elements (regional instance)
+# So weight matters as well as load — the public endpoint refuses the real query
+# while serving a light one seconds later, and the slow mirror is the one that
+# actually answers it. Failures are still retried rather than routed around once.
 MAX_ATTEMPTS = 6
 RETRY_DELAY_SECONDS = 5
 
@@ -122,7 +128,11 @@ log = logging.getLogger(__name__)
 
 
 def _default_post(url: str, query: str) -> dict:
-    r = httpx.post(url, content=query.encode(), timeout=90,
+    # 90s was killing the only mirror that answered. Measured 2026-07-28 with the
+    # real (not a toy) query: kumi.systems returned 200 elements at **93s** while
+    # overpass-api.de 504'd at 13s. We were giving up three seconds early on the
+    # one endpoint that worked. A slow answer beats a fast failure here.
+    r = httpx.post(url, content=query.encode(), timeout=150,
                    headers={"User-Agent": "FreelancingAgent/1.0"})
     r.raise_for_status()
     return r.json()

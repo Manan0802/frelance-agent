@@ -52,8 +52,13 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
   footer address past the first 200KB. Cap is now 2MB. **JS-rendered sites still yield nothing** —
   no `href` containing "contact" exists in their HTML at all. That gap needs a headless browser or
   the Maps scraper, not a better regex.
-- **Overpass degrades badly under load:** 90s timeout × 6 attempts × 7 tag families means one city
-  can take most of an hour when mirrors are busy. Fine for cron, painful for live measurement.
+- **Overpass degrades badly under load:** 6 attempts × 7 tag families means one city can take most
+  of an hour when mirrors are busy. Fine for cron, painful for live measurement.
+- **The client timeout was killing the only working mirror (fixed).** Re-measured 2026-07-28 with
+  the *real* query, not a toy one: `kumi.systems` returned 200 elements at **93s** while
+  `overpass-api.de` 504'd at 13s (though .de serves a light query in 2s). Our client gave up at 90s.
+  Timeout is now 150s. **Revises the old "load-flaky, not query-flaky" note — weight matters too.**
+  Always benchmark mirrors with the actual query.
 - **Engine B runs unattended:** `run_daily.py` (cron entrypoint) rotates cities by date, sources →
   researches → drafts → queues, and **never contacts a client** (a test asserts it). `--dry-run`
   checks a city without spending LLM calls.

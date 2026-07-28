@@ -31,6 +31,20 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 15 (strategy corrections: what we sell, to whom, where) = COMPLETE.**
 - **Phase 16 (follow-up sequencing) = COMPLETE.**
 - **Phase 17 (unattended Engine B + humanised copy) = COMPLETE.** 244 tests green.
+- **Phase 18 (delivery: contact + subject) = COMPLETE.** 273 tests green.
+- **A draft is only a lead if it has a channel.** `backend/engine_b/contacts.py` reads the target's
+  own site for a `mailto:`/footer address, then follows a contact page; `backend/engine_b/subject.py`
+  writes the subject from the **final** draft in its own call (never folded into `WRITE_PROMPT` —
+  that prompt is tuned and late rules override earlier ones). The dashboard names the channel per
+  card, orders **sendable first then best score**, and the `mailto:` link carries subject + body so
+  send is one click. Still never auto-sends.
+- **The page-fetch cap WAS the feature — measured.** At 200KB extraction found nothing on most real
+  sites: `dishoom.com` is 1.05MB, `deliciouslyella.com` 1.15MB, and both keep the contact link and
+  footer address past the first 200KB. Cap is now 2MB. **JS-rendered sites still yield nothing** —
+  no `href` containing "contact" exists in their HTML at all. That gap needs a headless browser or
+  the Maps scraper, not a better regex.
+- **Overpass degrades badly under load:** 90s timeout × 6 attempts × 7 tag families means one city
+  can take most of an hour when mirrors are busy. Fine for cron, painful for live measurement.
 - **Engine B runs unattended:** `run_daily.py` (cron entrypoint) rotates cities by date, sources →
   researches → drafts → queues, and **never contacts a client** (a test asserts it). `--dry-run`
   checks a city without spending LLM calls.

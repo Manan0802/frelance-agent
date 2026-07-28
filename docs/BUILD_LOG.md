@@ -997,4 +997,68 @@ OAuth credentials — a separate integration, gated on the domain/Workspace/warm
 
 **Result:** 244 tests green (201 → 244).
 
-<!-- Next session: append "## Phase 18 — ..." here. Do not edit sections above. -->
+
+## Phase 18 — Making a Draft Sendable (2026-07-28)
+
+**Manan's ask:** *"continue lets accelerate from tomorrow business karna shuru karte."*
+
+The gap between Phase 17 and doing business was not lead quality or draft quality. It was that
+**the drafts had nowhere to go.** Engine B could source, research, personalise and score — and
+then hand Manan a card with no address on it. Overpass carries an `email` tag for close to nobody
+(Phase 13 measured 0% on the no-website segment), so every run was producing work that couldn't be
+delivered.
+
+### Built
+
+**`backend/engine_b/contacts.py`** — reads the business's own website for a way in. `mailto:` links
+and footer addresses first; if the homepage has none, it follows a contact page (`/contact`,
+`/kontakt`, `/contacto`, …) and tries again. Returns `{"email", "contact_url"}`; a contact form is a
+real channel, it just costs a manual submit instead of a paste.
+
+Two decisions inside it are load-bearing:
+
+- **Redirects are followed manually, re-running the SSRF guard on each hop.** Following blindly
+  would let a redirect walk the fetcher onto a private address; not following at all (what
+  `research.py` does, deliberately) loses the plain `http://` → `https://` hop that most small
+  business sites still start with.
+- **The junk list is what live pages actually return**, not defensive padding: `logo@2x.png` matches
+  a naive email regex, and `noreply@wixpress.com`, `you@example.com` and `sentry@sentry.io` all
+  appear on pages that publish no real address.
+
+**`backend/engine_b/subject.py`** — a cold email needs a subject line, and a bad one costs more than
+a bad body since it decides whether the body is read at all. Written from the **final** draft (after
+the humanise and score regens), in its own LLM call. Folding it into `WRITE_PROMPT` would save a
+call, but that prompt is tuned across several phases and this project has already watched a
+late-added rule there override earlier ones (Phase 16). The cleanup strips exactly what the model
+emits unprompted: a `Subject:` label, exclamation marks, an ALL-CAPS opener, and `Re:`/`Fwd:` faking
+a reply thread — that last one is a deception, not a tactic, so it is removed rather than allowed.
+
+**Dashboard** — each card now names its channel and the list is ordered **sendable first, then best
+score**. An unreachable 9/10 sitting above a sendable 7/10 costs the only genuinely scarce resource
+here, which is Manan's morning. Unreachable drafts stay visible rather than being hidden: they are
+the running measure of how much sourcing effort goes to businesses nobody can contact. The email
+link is a `mailto:` with subject and body pre-filled, so approve-then-send is one click into his
+mail app. **Nothing auto-sends — that rule is unchanged.**
+
+### Measured (don't re-learn)
+
+- **The fetch cap was the feature.** At 200KB, extraction found nothing on most real sites.
+  `dishoom.com` is **1.05MB** and `deliciouslyella.com` **1.15MB**, mostly inline JS, and both keep
+  the contact link and footer address well past the first 200KB. Raising the cap to 2MB turned a
+  miss into a hit. Read the whole page or don't bother.
+- **JS-rendered sites yield nothing to a plain fetcher.** Several probed sites had no `href`
+  containing "contact" anywhere in the HTML — the nav is built client-side. That is the hard ceiling
+  of non-browser extraction, and the reason the remaining gap needs a headless browser or the Maps
+  scraper rather than a better regex.
+- **Overpass degrades badly under load.** With 90s timeouts × 6 attempts × 7 tag families, one city
+  can take the better part of an hour when the mirrors are busy. Fine for cron, painful for
+  measurement — start sourcing before you need the answer.
+
+### Schema
+
+`outbound_targets.contact_url` and `outreach_messages.subject`, both hand-applied additive
+`ALTER TABLE` (still no Alembic in this project).
+
+**Result:** 273 tests green (244 → 273).
+
+<!-- Next session: append "## Phase 19 — ..." here. Do not edit sections above. -->

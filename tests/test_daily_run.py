@@ -145,3 +145,29 @@ def test_day_index_defaults_to_todays_date_so_cron_needs_no_state():
     a = pick_areas_for_run(per_run=2)
     b = pick_areas_for_run(day_index=(datetime.utcnow() - datetime(2026, 1, 1)).days, per_run=2)
     assert a == b
+
+
+def test_daily_run_spends_its_budget_on_businesses_it_can_actually_reach():
+    """Measured on Austin: half the website-having rows yield an email or a form,
+    against 8% of the no-website rows yielding a phone. The cap is what makes the
+    ordering matter — 40 targets taken in Overpass order is mostly unreachable."""
+    from backend.automation.daily import run_daily
+
+    rows = [
+        {"name": "NoSite A", "dedup_hash": "a"},
+        {"name": "HasSite B", "website": "https://b.com", "dedup_hash": "b"},
+        {"name": "NoSite C", "dedup_hash": "c"},
+        {"name": "HasSite D", "website": "https://d.com", "dedup_hash": "d"},
+    ]
+    ingested = []
+
+    run_daily(
+        db=None,
+        fetch=lambda areas: rows,
+        ingest=lambda r, db: ingested.extend(r) or [],
+        run_engine=lambda t, db, pf: [],
+        notify=lambda text: True,
+        max_targets=2,
+    )
+
+    assert [r["name"] for r in ingested] == ["HasSite B", "HasSite D"]

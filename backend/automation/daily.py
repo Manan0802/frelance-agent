@@ -35,6 +35,18 @@ AREAS_PER_RUN = 3
 MAX_TARGETS_PER_RUN = 40
 
 
+def reachable_first(rows: list[dict]) -> list[dict]:
+    """Spend the daily cap where a contact can actually be found.
+
+    Measured on Austin: half the website-having rows yield an email or a contact
+    form, against 8% of the no-website rows yielding even a phone. Taking the
+    first 40 rows in Overpass order fills the morning queue with businesses
+    nobody can reach. The no-website rows still follow — they're the better
+    pitch when a channel exists, they just can't lead.
+    """
+    return sorted(rows, key=lambda r: not (r.get("website") or r.get("email")))
+
+
 def _today_index() -> int:
     return (datetime.utcnow() - EPOCH).days
 
@@ -73,7 +85,7 @@ def run_daily(
         result["error"] = f"sourcing failed: {exc}"
         return result
 
-    targets = ingest(rows[:max_targets], db)
+    targets = ingest(reachable_first(rows)[:max_targets], db)
     result["targets"] = len(targets)
     if not targets:
         # Everything may already be in the DB from an earlier run — that's a

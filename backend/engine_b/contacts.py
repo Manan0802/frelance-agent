@@ -32,7 +32,10 @@ JUNK_LOCALS = ("noreply", "no-reply", "donotreply")
 CONTACT_HINTS = ("contact", "kontakt", "contacto", "contatti", "kontakta", "reach-us")
 
 MAX_REDIRECTS = 3
-MAX_PAGE_BYTES = 200_000
+# Measured, not guessed: dishoom.com is 1.05MB and deliciouslyella.com 1.15MB of
+# mostly inline JS, and the contact link and footer address sit past the first
+# 200KB. A 200KB cap found nothing on either. Read the page or don't bother.
+MAX_PAGE_BYTES = 2_000_000
 
 
 def emails_in(html: str) -> list[str]:

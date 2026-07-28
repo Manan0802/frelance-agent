@@ -14,7 +14,7 @@
     {% elif m.contact.kind == "form" %}
       No address published &mdash; <a href="{{ m.contact.value }}" target="_blank" rel="noopener">their contact form</a>. Paste the draft in.
     {% elif m.contact.kind == "phone" %}
-      No email anywhere &mdash; call <a href="tel:{{ m.contact.value }}">{{ m.contact.value }}</a>. Use the draft as your opener.
+      No email anywhere &mdash; call <a href="tel:{{ m.contact.value|replace(' ', '')|replace('-', '') }}">{{ m.contact.value }}</a>. Use the draft as your opener.
     {% else %}
       No way to reach them yet &mdash; no email, no form, no phone. Skip it.
     {% endif %}

@@ -31,7 +31,16 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 15 (strategy corrections: what we sell, to whom, where) = COMPLETE.**
 - **Phase 16 (follow-up sequencing) = COMPLETE.**
 - **Phase 17 (unattended Engine B + humanised copy) = COMPLETE.** 244 tests green.
-- **Phase 18 (delivery: contact + subject) = COMPLETE.** 273 tests green.
+- **Phase 18 (delivery: contact + subject) = COMPLETE.** 278 tests green.
+- **Reachability, measured live (Austin, 608 businesses):** 256 have a website, 352 don't; only 60
+  of 608 carry an OSM `email` tag. Probing 50 website-having rows → **34% email, 16% contact form,
+  50% nothing** (20 of those 50% have a phone). So **~128 reachable leads from one city**. The
+  no-website segment held at **8% phone (29/352)** — qualify-able, still not deliverable.
+- **Two traps found only in live data:** the published address is often a *vendor's*
+  (`webreporting@gargle.com` on a dental site) — `best_email()` prefers the business's own domain,
+  but off-domain is NOT a reject since small businesses run on gmail; and **one inbox can be three
+  leads** (`startnow@austincc.edu` × 3 campuses) — `send_order()` marks repeats and sinks them,
+  because three cold emails into one inbox is how a sending domain gets reported.
 - **A draft is only a lead if it has a channel.** `backend/engine_b/contacts.py` reads the target's
   own site for a `mailto:`/footer address, then follows a contact page; `backend/engine_b/subject.py`
   writes the subject from the **final** draft in its own call (never folded into `WRITE_PROMPT` —

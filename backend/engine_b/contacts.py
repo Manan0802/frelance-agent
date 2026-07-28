@@ -1,9 +1,11 @@
 """Find a way to actually reach a business.
 
-Measured on live Overpass data: the `email` tag is present for ~0% of rows, so
-sourcing gives reach and nothing to reach *with*. For the has-website segment
-the address is on their own site — a mailto: link, a footer line, or a form on a
-contact page. This module is the delivery half of a lead.
+Measured on live Overpass data (Austin, 608 businesses): only 60 rows carry an
+`email` tag at all, so sourcing gives reach and almost nothing to reach *with*.
+For the has-website segment the address is on their own site — a mailto: link, a
+footer line, or a form on a contact page. Probing 50 of them found an email for
+34% and a contact form for another 16%, taking one city from ~10% contactable to
+half the website segment. This module is the delivery half of a lead.
 
 Redirects are followed **manually**, re-running the SSRF guard on every hop:
 following blindly would let a redirect walk us onto a private address, and not
@@ -73,6 +75,27 @@ def _default_fetch(url: str, _depth: int = 0) -> str:
     return r.text[:MAX_PAGE_BYTES]
 
 
+def _site_domain(url: str) -> str:
+    host = (urlparse(url).hostname or "").lower()
+    return host[4:] if host.startswith("www.") else host
+
+
+def best_email(found: list[str], website: str) -> str | None:
+    """The business's own domain wins. Live Austin data: a dental practice
+    published `webreporting@gargle.com` — their marketing vendor — above their
+    own address, and a DSO group inbox above the individual clinic. Pitching the
+    vendor wastes the lead. Off-domain is not a reject though: small businesses
+    run on gmail constantly."""
+    if not found:
+        return None
+    domain = _site_domain(website)
+    if domain:
+        for addr in found:
+            if addr.endswith("@" + domain) or addr.endswith("." + domain):
+                return addr
+    return found[0]
+
+
 def _contact_page(html: str, base: str) -> str | None:
     for href in re.findall(r'href=["\']([^"\']+)["\']', html or ""):
         if any(h in href.lower() for h in CONTACT_HINTS) and not href.startswith("mailto:"):
@@ -98,7 +121,7 @@ def find_contact(website: str, fetch=_default_fetch) -> dict:
 
     found = emails_in(home)
     if found:
-        return {"email": found[0], "contact_url": None}
+        return {"email": best_email(found, website), "contact_url": None}
 
     page = _contact_page(home, website)
     if not page:
@@ -108,5 +131,4 @@ def find_contact(website: str, fetch=_default_fetch) -> dict:
     except Exception:
         return {"email": None, "contact_url": page}
 
-    found = emails_in(html)
-    return {"email": found[0] if found else None, "contact_url": page}
+    return {"email": best_email(emails_in(html), website), "contact_url": page}

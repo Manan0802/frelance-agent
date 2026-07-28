@@ -1042,6 +1042,29 @@ mail app. **Nothing auto-sends — that rule is unchanged.**
 
 ### Measured (don't re-learn)
 
+**Austin, one live run — 608 businesses, 256 with a website, 352 without.** Only 60 of the 608 carry
+an OSM `email` tag at all. Probing 50 of the website-having rows:
+
+| outcome | count | share |
+|---|---|---|
+| email found | 17 | 34% |
+| contact form only | 8 | 16% |
+| nothing (20 of them have a phone) | 25 | 50% |
+
+So one city yields roughly **128 email-or-form reachable leads** where before there were ~60 across
+the whole set. The no-website segment held at **8% phone (29/352)** — consistent with Phase 13's
+7.5%, and still the segment automation can qualify but not deliver.
+
+**Two failure modes only showed up in that live data, and both are now handled:**
+
+- **The published address is often a vendor's.** A dental practice listed `webreporting@gargle.com`
+  (their marketing agency) above their own, and a DSO group inbox above the individual clinic.
+  `best_email()` now prefers an address on the business's own domain — but off-domain is not a
+  reject, because small businesses run on gmail constantly.
+- **One inbox appeared as three leads.** `startnow@austincc.edu` came back for three separate campus
+  rows. Three cold emails into one inbox is how a sending domain gets reported, so `send_order()`
+  marks repeats of an address already used higher in the list and drops them to the bottom.
+
 - **The fetch cap was the feature.** At 200KB, extraction found nothing on most real sites.
   `dishoom.com` is **1.05MB** and `deliciouslyella.com` **1.15MB**, mostly inline JS, and both keep
   the contact link and footer address well past the first 200KB. Raising the cap to 2MB turned a
@@ -1059,6 +1082,6 @@ mail app. **Nothing auto-sends — that rule is unchanged.**
 `outbound_targets.contact_url` and `outreach_messages.subject`, both hand-applied additive
 `ALTER TABLE` (still no Alembic in this project).
 
-**Result:** 273 tests green (244 → 273).
+**Result:** 278 tests green (244 → 278).
 
 <!-- Next session: append "## Phase 19 — ..." here. Do not edit sections above. -->

@@ -7,6 +7,9 @@
   {% if m.subject %}<p class="card-subject">Subject: {{ m.subject }}</p>{% endif %}
   <p class="card-draft">{{ m.draft_text }}</p>
   {# Where this actually goes. Without it an approved draft has nowhere to be sent. #}
+  {% if m.duplicate %}
+  <p class="channel channel-dup">Already contacting {{ m.contact.value }} above &mdash; don't send this one too.</p>
+  {% endif %}
   <p class="channel channel-{{ m.contact.kind }}">
     {% if m.contact.kind == "email" %}
       Send to <a href="mailto:{{ m.contact.value }}?subject={{ m.subject|urlencode }}&amp;body={{ m.draft_text|urlencode }}">{{ m.contact.value }}</a>

@@ -52,3 +52,32 @@ def test_sendable_drafts_come_first_then_the_best_scoring():
         {"score": 8.0, "contact": {"reachable": True}},
     ]
     assert [r["score"] for r in send_order(rows)] == [8.0, 6.0, 9.0]
+
+
+def test_the_same_address_is_only_sendable_once():
+    """Live Austin data: `startnow@austincc.edu` came back for three separate
+    campus rows. Three cold emails into one inbox is how a domain gets reported,
+    and this is the only pass where that can be caught."""
+    from backend.api.dashboard import send_order
+
+    rows = [
+        {"score": 9.0, "contact": {"reachable": True, "kind": "email", "value": "a@x.com"}},
+        {"score": 8.0, "contact": {"reachable": True, "kind": "email", "value": "a@x.com"}},
+        {"score": 7.0, "contact": {"reachable": True, "kind": "email", "value": "b@y.com"}},
+    ]
+    out = send_order(rows)
+    assert [r["duplicate"] for r in out] == [False, False, True]
+    assert out[2]["score"] == 8.0, "the duplicate drops below the unique ones"
+
+
+def test_two_businesses_sharing_a_contact_form_is_not_a_duplicate():
+    """A form submit goes to whoever owns that page — but unlike an inbox, two
+    different pages on one platform aren't the same recipient. Only exact
+    repeats count."""
+    from backend.api.dashboard import send_order
+
+    rows = [
+        {"score": 9.0, "contact": {"reachable": True, "kind": "form", "value": "https://a.com/contact"}},
+        {"score": 8.0, "contact": {"reachable": True, "kind": "form", "value": "https://b.com/contact"}},
+    ]
+    assert [r["duplicate"] for r in send_order(rows)] == [False, False]

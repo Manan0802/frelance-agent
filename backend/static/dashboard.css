@@ -263,3 +263,9 @@ h2 {
 .channel-form { border-left-color: var(--draft); }
 .channel-phone { border-left-color: var(--draft); }
 .channel-none { border-left-color: var(--line); font-style: italic; }
+
+.channel-dup {
+  border-left-color: var(--draft);
+  color: var(--draft);
+  font-weight: 600;
+}

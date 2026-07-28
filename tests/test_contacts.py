@@ -76,6 +76,30 @@ def test_returns_the_contact_page_alone_when_it_is_only_a_form():
     }
 
 
+def test_prefers_an_address_on_the_business_own_domain():
+    """Live Austin data: a dental practice published `webreporting@gargle.com`
+    (their marketing vendor) above their own address. Pitching the vendor wastes
+    the lead, so the business's own domain wins when both are on the page."""
+    pages = {"https://daybreakdentalcare.com":
+             "webreporting@gargle.com admin@daybreakdentalcare.com"}
+
+    assert find_contact("https://daybreakdentalcare.com",
+                        fetch=lambda u: pages[u])["email"] == "admin@daybreakdentalcare.com"
+
+
+def test_www_and_subdomains_still_count_as_the_business_own_domain():
+    pages = {"https://www.austinurbanvet.com": "x@vendor.com info@austinurbanvet.com"}
+    assert find_contact("https://www.austinurbanvet.com",
+                        fetch=lambda u: pages[u])["email"] == "info@austinurbanvet.com"
+
+
+def test_an_off_domain_address_is_still_used_when_it_is_all_there_is():
+    """Small businesses run on gmail constantly — off-domain is not a reject."""
+    pages = {"https://afterhourskids.com": "afterhourskids@gmail.com"}
+    assert find_contact("https://afterhourskids.com",
+                        fetch=lambda u: pages[u])["email"] == "afterhourskids@gmail.com"
+
+
 def test_no_website_means_no_contact_and_no_fetch():
     calls = []
 

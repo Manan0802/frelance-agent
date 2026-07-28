@@ -35,11 +35,24 @@ def contact_channel(email: str | None, contact_url: str | None, phone: str | Non
 def send_order(views: list[dict]) -> list[dict]:
     """The order Manan should work the list in: what he can send, best first.
     Unreachable drafts stay visible — they're the signal for how much sourcing
-    effort is being spent on businesses nobody can contact."""
-    return sorted(
+    effort is being spent on businesses nobody can contact.
+
+    Marks repeats of a channel already used higher in the list. Live Austin data
+    returned `startnow@austincc.edu` for three separate campus rows; three cold
+    emails into one inbox is how a sending domain gets reported, and this pass is
+    the only place that can be caught.
+    """
+    ranked = sorted(
         views,
         key=lambda v: (not v["contact"]["reachable"], -(v["score"] or 0)),
     )
+    seen: set[str] = set()
+    for view in ranked:
+        channel = view["contact"].get("value")
+        view["duplicate"] = bool(channel) and channel in seen
+        if channel:
+            seen.add(channel)
+    return sorted(ranked, key=lambda v: v["duplicate"])
 
 
 def _message_view(m: OutreachMessage, targets_by_id: dict, project_types: dict) -> dict:

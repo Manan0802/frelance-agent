@@ -18,6 +18,7 @@
     <div class="stat-row">
       <div class="stat"><div class="num">{{ stats.targets }}</div><div class="lbl">Outbound targets found</div></div>
       <div class="stat"><div class="num">{{ stats.messages_total }}</div><div class="lbl">Messages drafted</div></div>
+      <div class="stat"><div class="num">{{ stats.sendable }}</div><div class="lbl">Have a contact channel</div></div>
       <div class="stat"><div class="num">{{ stats.messages_approved }}</div><div class="lbl">Messages approved</div></div>
       <div class="stat"><div class="num">{{ stats.leads }}</div><div class="lbl">Inbound leads found</div></div>
       <div class="stat"><div class="num">{{ stats.proposals_total }}</div><div class="lbl">Proposals drafted</div></div>
@@ -26,7 +27,7 @@
 
     <section>
       <div class="sec-head"><span class="sec-num">B</span><h2>Outbound messages</h2></div>
-      <p class="sec-note">Engine B — cold outreach to local businesses, personalized against your portfolio.</p>
+      <p class="sec-note">Engine B — cold outreach to local businesses, personalized against your portfolio. Sendable drafts first, then best-scoring.</p>
       <button class="approve-btn approve-all"
               hx-post="/dashboard/approve-all"
               hx-vals='{"min_score": 7}'

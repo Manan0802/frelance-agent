@@ -1,5 +1,6 @@
 from backend.llm.gemini import generate
 from backend.engine_b.humanize import ai_tells, HUMAN_RULES
+from backend.engine_b.subject import subject_for
 
 RULES = """Rules: start with the client's problem (never "Hi I am Manan"); reference one
 specific detail; mention one relevant past project; name the tech you'd use — use ONLY tech
@@ -185,6 +186,8 @@ def write_message(target, research, projects, llm=generate) -> dict:
         score = _score(draft, llm, has_source)
     return {
         "draft_text": draft,
+        # Written last, from whichever draft survived the regen loop.
+        "subject": subject_for(draft, target, llm=llm),
         "personalization_score": score,
         "portfolio_used": [p.name for p in projects],
     }

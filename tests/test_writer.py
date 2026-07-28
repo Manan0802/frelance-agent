@@ -28,6 +28,25 @@ def test_writer_regens_when_low_score():
     assert "Site" in out["portfolio_used"]
 
 
+def test_writer_returns_a_subject_so_the_email_is_actually_sendable():
+    """The subject is generated from the final draft, not an intermediate one —
+    a rewritten body with the first draft's subject is a mismatch the recipient
+    sees before anything else."""
+    projects = [PortfolioProject(name="Site", type="web", description="site")]
+    research = {"research_summary": "s", "pain_points": "p", "has_source": True}
+
+    def fake_llm(prompt):
+        if "ONLY the subject line" in prompt:
+            assert "final body" in prompt, "subject must be written from the final draft"
+            return "Subject: your booking page"
+        if "Write a" in prompt:
+            return "final body — noticed you take bookings by phone."
+        return "9"
+
+    out = write_message(T(), research, projects, llm=fake_llm)
+    assert out["subject"] == "your booking page"
+
+
 def test_writer_grounds_tech_claims_in_the_portfolio():
     """The LLM must be told which tech each project actually used, and told not
     to invent any — a live run once produced "using WordPress" for a project

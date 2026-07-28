@@ -4,7 +4,21 @@
     <span class="pill score">{{ "%.0f"|format(m.score) }}/10</span>
     <span class="pill status status-{{ m.status }}">{{ m.status }}</span>
   </div>
+  {% if m.subject %}<p class="card-subject">Subject: {{ m.subject }}</p>{% endif %}
   <p class="card-draft">{{ m.draft_text }}</p>
+  {# Where this actually goes. Without it an approved draft has nowhere to be sent. #}
+  <p class="channel channel-{{ m.contact.kind }}">
+    {% if m.contact.kind == "email" %}
+      Send to <a href="mailto:{{ m.contact.value }}?subject={{ m.subject|urlencode }}&amp;body={{ m.draft_text|urlencode }}">{{ m.contact.value }}</a>
+      &mdash; opens your mail app, subject and body already filled.
+    {% elif m.contact.kind == "form" %}
+      No address published &mdash; <a href="{{ m.contact.value }}" target="_blank" rel="noopener">their contact form</a>. Paste the draft in.
+    {% elif m.contact.kind == "phone" %}
+      No email anywhere &mdash; call <a href="tel:{{ m.contact.value }}">{{ m.contact.value }}</a>. Use the draft as your opener.
+    {% else %}
+      No way to reach them yet &mdash; no email, no form, no phone. Skip it.
+    {% endif %}
+  </p>
   <p class="pricing-note">Suggested rate: ${{ m.pricing.suggested_rate_usd_per_hr[0] }}&ndash;${{ m.pricing.suggested_rate_usd_per_hr[1] }}/hr ({{ m.pricing.tier }}-tier) &mdash; reference only, don't quote this in the message.</p>
   {% if m.status != "approved" %}
   <button

@@ -19,6 +19,29 @@ def _project_types() -> dict:
     return {p.name: p.type for p in pf.projects}
 
 
+def contact_channel(email: str | None, contact_url: str | None, phone: str | None) -> dict:
+    """How Manan actually reaches this business, best channel first.
+
+    Ordered by what costs him least: paste an email, submit a form, make a call.
+    `reachable: False` is the important case — a drafted, unreachable target is
+    work already spent, and the card has to say so rather than look sendable.
+    """
+    for kind, value in (("email", email), ("form", contact_url), ("phone", phone)):
+        if value:
+            return {"kind": kind, "value": value, "reachable": True}
+    return {"kind": "none", "value": None, "reachable": False}
+
+
+def send_order(views: list[dict]) -> list[dict]:
+    """The order Manan should work the list in: what he can send, best first.
+    Unreachable drafts stay visible — they're the signal for how much sourcing
+    effort is being spent on businesses nobody can contact."""
+    return sorted(
+        views,
+        key=lambda v: (not v["contact"]["reachable"], -(v["score"] or 0)),
+    )
+
+
 def _message_view(m: OutreachMessage, targets_by_id: dict, project_types: dict) -> dict:
     target = targets_by_id.get(m.target_id)
     used = [n.strip() for n in (m.portfolio_used or "").split(",") if n.strip()]
@@ -29,9 +52,15 @@ def _message_view(m: OutreachMessage, targets_by_id: dict, project_types: dict) 
         "name": target.name if target else "(unknown target)",
         "score": m.personalization_score,
         "status": m.status,
+        "subject": m.subject or "",
         "draft_text": m.draft_text,
         "created_at": m.created_at,
         "pricing": pricing,
+        "contact": contact_channel(
+            target.email if target else None,
+            target.contact_url if target else None,
+            target.phone if target else None,
+        ),
     }
 
 
@@ -75,7 +104,9 @@ def _dashboard_context(db) -> dict:
         db.query(InboundProposal).order_by(InboundProposal.created_at.desc()).all()
     )
 
-    message_views = [_message_view(m, targets_by_id, project_types) for m in messages]
+    message_views = send_order(
+        [_message_view(m, targets_by_id, project_types) for m in messages]
+    )
     proposal_views = [_proposal_view(p, leads_by_id, project_types) for p in proposals]
 
     return {
@@ -84,6 +115,7 @@ def _dashboard_context(db) -> dict:
         "stats": {
             "targets": len(targets),
             "leads": len(leads),
+            "sendable": sum(1 for m in message_views if m["contact"]["reachable"]),
             "messages_total": len(message_views),
             "messages_approved": sum(1 for m in message_views if m["status"] == "approved"),
             "proposals_total": len(proposal_views),

@@ -1,6 +1,7 @@
 import uuid
 
 from backend.database.models import OutreachMessage
+from backend.engine_b.contacts import find_contact
 from backend.engine_b.research import research_target
 from backend.engine_b.matcher import match_projects
 from backend.engine_b.writer import write_message
@@ -14,9 +15,17 @@ def run_engine_b(targets, db, portfolio, deps=None):
     match = deps.get("match", lambda need, projects: match_projects(need, projects))
     write = deps.get("write", lambda t, r, p: write_message(t, r, p))
     notify = deps.get("notify", lambda text: send_whatsapp(text))
+    find = deps.get("find_contact", find_contact)
 
     messages, digest_rows = [], []
     for target in targets:
+        # A draft with nowhere to send it isn't a lead. Its own fetch rather
+        # than research's: research truncates at 6k chars and the address is
+        # usually in the footer, well past that.
+        if target.website and not target.email:
+            c = find(target.website)
+            target.email = c["email"]
+            target.contact_url = c["contact_url"]
         r = research(target)
         projects = match(r.get("pain_points") or target.name, portfolio.projects)
         w = write(target, r, projects)
@@ -29,6 +38,7 @@ def run_engine_b(targets, db, portfolio, deps=None):
             research_summary=r.get("research_summary", ""),
             pain_points=r.get("pain_points", ""),
             portfolio_used=",".join(w["portfolio_used"]),
+            subject=w.get("subject", ""),
             draft_text=w["draft_text"],
             personalization_score=w["personalization_score"],
         )

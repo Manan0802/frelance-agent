@@ -12,6 +12,8 @@ class OutboundTarget(Base):
     name: Mapped[str] = mapped_column(String)
     website: Mapped[str | None] = mapped_column(String, nullable=True)
     email: Mapped[str | None] = mapped_column(String, nullable=True)
+    # Where a form is the only channel — most modern sites hide the address.
+    contact_url: Mapped[str | None] = mapped_column(String, nullable=True)
     phone: Mapped[str | None] = mapped_column(String, nullable=True)
     category: Mapped[str | None] = mapped_column(String, nullable=True)
     location: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -27,6 +29,7 @@ class OutreachMessage(Base):
     research_summary: Mapped[str] = mapped_column(Text, default="")
     pain_points: Mapped[str] = mapped_column(Text, default="")
     portfolio_used: Mapped[str] = mapped_column(Text, default="")
+    subject: Mapped[str] = mapped_column(Text, default="")
     draft_text: Mapped[str] = mapped_column(Text, default="")
     personalization_score: Mapped[float] = mapped_column(Float, default=0.0)
     status: Mapped[str] = mapped_column(String, default="draft")

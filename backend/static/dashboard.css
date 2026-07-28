@@ -240,3 +240,26 @@ h2 {
   margin-bottom: 14px;
   background: var(--approved);
 }
+
+.card-subject {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+
+/* Delivery channel — the difference between a draft and a lead. */
+.channel {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  border-left: 2px solid var(--approved);
+  padding-left: 10px;
+  margin: 0 0 12px;
+}
+
+.channel a { color: var(--accent); font-weight: 600; }
+
+.channel-form { border-left-color: var(--draft); }
+.channel-phone { border-left-color: var(--draft); }
+.channel-none { border-left-color: var(--line); font-style: italic; }

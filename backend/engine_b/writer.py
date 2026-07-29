@@ -1,5 +1,6 @@
 from backend.llm.gemini import generate
 from backend.engine_b.humanize import ai_tells, HUMAN_RULES
+from backend.engine_b.research import is_social_only
 from backend.engine_b.subject import subject_for
 
 # Length, self-focus and the ask are all set from measured cold-email data rather
@@ -57,6 +58,16 @@ it anchors the whole relationship at that price.
 Do NOT invent or assert anything else about them (what they sell, their customers, their history,
 their current setup) — you know none of it, and a believable-sounding guess that turns out wrong
 loses the client.
+"""
+
+UNREADABLE_ANGLE = """
+ANGLE — this business HAS a website, but it COULD NOT BE READ (it blocked the fetch, or it
+renders in the browser). So you know it exists and nothing about what is on it.
+
+Do NOT say they have no website — they do, and being told otherwise is an obvious error to
+someone who runs one. Equally, do NOT describe, criticise or refer to anything on it: you have not
+seen it. Pitch from the category alone — the work a business of this kind does by hand — and make
+the offer concrete, drawn from your past work above.
 """
 
 RESEARCHED_ANGLE = """
@@ -136,6 +147,21 @@ def format_projects(projects) -> str:
     )
 
 
+def angle_for(target, research) -> str:
+    """Three states, not two — claiming an absence is only honest in the first.
+
+    A live draft told a clinic "you don't have a website" when theirs simply
+    403'd our fetcher, which is as obviously wrong to the reader as telling them
+    a working site is broken.
+    """
+    if research.get("has_source"):
+        return RESEARCHED_ANGLE
+    site = getattr(target, "website", None)
+    if site and not is_social_only(site):
+        return UNREADABLE_ANGLE
+    return NO_WEBSITE_ANGLE
+
+
 def _draft(target, research, projects, llm, stricter=""):
     proj_str = format_projects(projects)
     return llm(
@@ -146,7 +172,7 @@ def _draft(target, research, projects, llm, stricter=""):
             summary=research.get("research_summary", ""),
             pain=research.get("pain_points", ""),
             projects=proj_str,
-            grounding=RESEARCHED_ANGLE if research.get("has_source") else NO_WEBSITE_ANGLE,
+            grounding=angle_for(target, research),
             rules=rules_for(projects),
             stricter=stricter,
         )

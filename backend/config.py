@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     greenapi_token: str = ""
     manan_whatsapp: str = ""
     api_key: str = ""  # if set, required on state-changing API calls
+    # When set, the dashboard asks for it over HTTP Basic. Empty means no gate,
+    # which is right for localhost and wrong for anything with a public URL —
+    # the deploy entrypoint refuses to boot without it.
+    dashboard_password: str = ""
 
 
 settings = Settings()

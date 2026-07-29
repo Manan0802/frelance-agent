@@ -1,8 +1,11 @@
+import secrets
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.security import HTTPBasic
 from fastapi.templating import Jinja2Templates
 
+from backend.config import settings
 from backend.database.connection import get_db
 from backend.database.models import OutboundTarget, OutreachMessage, JobLead, InboundProposal
 from backend.api.routes import approve_message, approve_proposal
@@ -12,6 +15,31 @@ from backend.pricing.suggest import suggest_rate, high_tier_geography
 router = APIRouter()
 
 templates = Jinja2Templates(directory=str(Path(__file__).resolve().parent.parent / "templates"))
+
+
+def require_password_for_deploy(password: str) -> None:
+    """Called by the hosted entrypoint. The dashboard shows every business name,
+    address, email and draft in the pipeline; publishing that unprotected is the
+    one deployment mistake worth making impossible rather than documenting."""
+    if not password:
+        raise RuntimeError(
+            "DASHBOARD_PASSWORD must be set when the dashboard is reachable from "
+            "the internet — it lists client contacts and unsent drafts."
+        )
+
+
+def guard(credentials=Depends(HTTPBasic(auto_error=False))):
+    """No password configured means no gate, so local work stays frictionless."""
+    expected = settings.dashboard_password
+    if not expected:
+        return
+    ok = credentials is not None and secrets.compare_digest(credentials.password, expected)
+    if not ok:
+        raise HTTPException(
+            status_code=401,
+            detail="not authorised",
+            headers={"WWW-Authenticate": "Basic"},
+        )
 
 
 def _project_types() -> dict:
@@ -137,13 +165,13 @@ def _dashboard_context(db) -> dict:
     }
 
 
-@router.get("/dashboard")
+@router.get("/dashboard", dependencies=[Depends(guard)])
 def dashboard(request: Request, db=Depends(get_db)):
     ctx = _dashboard_context(db)
     return templates.TemplateResponse(request, "dashboard.html", ctx)
 
 
-@router.patch("/dashboard/messages/{message_id}/approve")
+@router.patch("/dashboard/messages/{message_id}/approve", dependencies=[Depends(guard)])
 def dashboard_approve_message(message_id: str, request: Request, db=Depends(get_db)):
     result = approve_message(db, message_id)
     if not result:
@@ -155,7 +183,7 @@ def dashboard_approve_message(message_id: str, request: Request, db=Depends(get_
     )
 
 
-@router.post("/dashboard/approve-all")
+@router.post("/dashboard/approve-all", dependencies=[Depends(guard)])
 def approve_all(body: dict, db=Depends(get_db)):
     """Manan's chosen middle path: everything up to the send runs unattended,
     and his part is one action instead of twenty.
@@ -180,7 +208,7 @@ def approve_all(body: dict, db=Depends(get_db)):
     return {"approved": len(pending), "sent": 0}
 
 
-@router.patch("/dashboard/proposals/{proposal_id}/approve")
+@router.patch("/dashboard/proposals/{proposal_id}/approve", dependencies=[Depends(guard)])
 def dashboard_approve_proposal(proposal_id: str, request: Request, db=Depends(get_db)):
     p = approve_proposal(db, proposal_id)
     if not p:

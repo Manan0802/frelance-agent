@@ -18,7 +18,7 @@ from urllib.parse import urljoin, urlparse
 
 import httpx
 
-from backend.engine_b.research import _is_safe_url
+from backend.engine_b.research import _is_safe_url, is_social_only
 
 EMAIL_RE = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
 
@@ -109,7 +109,7 @@ def find_contact(website: str, fetch=_default_fetch) -> dict:
     """`{"email", "contact_url"}` — either is a channel Manan can use; both None
     means this lead is drafted but undeliverable."""
     none = {"email": None, "contact_url": None}
-    if not website:
+    if not website or is_social_only(website):
         return none
 
     try:

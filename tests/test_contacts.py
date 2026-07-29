@@ -111,6 +111,18 @@ def test_no_website_means_no_contact_and_no_fetch():
     assert calls == []
 
 
+def test_a_social_page_is_not_worth_fetching():
+    """A Facebook page carries no business address and blocks scrapers anyway —
+    spending a fetch on it is pure cost. Those leads are reached by phone."""
+    calls = []
+
+    out = find_contact("https://www.facebook.com/somebakery",
+                       fetch=lambda u: calls.append(u) or "info@facebook.com")
+
+    assert calls == []
+    assert out == {"email": None, "contact_url": None}
+
+
 def test_a_dead_site_is_not_an_error():
     """Cron runs this over hundreds of sites; a 500 must not end the run."""
     def boom(url):

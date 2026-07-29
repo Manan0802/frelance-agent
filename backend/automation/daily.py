@@ -23,6 +23,7 @@ from datetime import datetime
 
 from backend.engine_b.areas import AREAS
 from backend.engine_b.overpass_source import fetch_overpass
+from backend.engine_b.research import is_social_only
 from backend.engine_b.ingest import ingest_targets
 from backend.engine_b.graph import run_engine_b
 from backend.notify.whatsapp import send_whatsapp
@@ -44,7 +45,11 @@ def reachable_first(rows: list[dict]) -> list[dict]:
     nobody can reach. The no-website rows still follow — they're the better
     pitch when a channel exists, they just can't lead.
     """
-    return sorted(rows, key=lambda r: not (r.get("website") or r.get("email")))
+    def has_channel(row: dict) -> bool:
+        site = row.get("website") or ""
+        return bool(row.get("email") or (site and not is_social_only(site)))
+
+    return sorted(rows, key=lambda r: not has_channel(r))
 
 
 def _today_index() -> int:

@@ -171,3 +171,15 @@ def test_daily_run_spends_its_budget_on_businesses_it_can_actually_reach():
     )
 
     assert [r["name"] for r in ingested] == ["HasSite B", "HasSite D"]
+
+
+def test_a_facebook_page_does_not_count_as_a_website():
+    """OSM's `website` tag is a social page often enough that ranking on the tag
+    alone puts unreachable leads at the front of the queue."""
+    from backend.automation.daily import reachable_first
+
+    rows = [
+        {"name": "Social", "website": "https://facebook.com/x"},
+        {"name": "Real", "website": "https://real.com"},
+    ]
+    assert [r["name"] for r in reachable_first(rows)] == ["Real", "Social"]

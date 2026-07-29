@@ -49,6 +49,25 @@ def _default_fetch(url: str) -> str:
         return ""
 
 
+# OSM's `website` tag on a small business is very often a Facebook page, a
+# Linktree or a WhatsApp link. That business has no site — and it is the stronger
+# pitch, since the absence is a fact we verified. Fetching wouldn't catch it:
+# facebook.com returns a clean 200, so `has_source` would come back True and the
+# model would write about a site it never really read.
+SOCIAL_HOSTS = (
+    "facebook.com", "fb.me", "instagram.com", "twitter.com", "x.com",
+    "linktr.ee", "wa.me", "whatsapp.com", "yelp.com", "business.site",
+    "linkedin.com", "tiktok.com", "google.com", "sites.google.com",
+)
+
+
+def is_social_only(url: str) -> bool:
+    """True when the "website" is really a social or marketplace page."""
+    host = (urlparse(url).hostname or "").lower() if url else ""
+    host = host[4:] if host.startswith("www.") else host
+    return any(host == s or host.endswith("." + s) for s in SOCIAL_HOSTS)
+
+
 RESEARCH_PROMPT = """You are researching a local business for a freelance pitch.
 Business: {name} ({category}) in {location}.
 Website content (truncated):
@@ -87,7 +106,8 @@ def capability_summary(portfolio) -> str:
 
 
 def research_target(target, portfolio=None, fetch=_default_fetch, llm=generate) -> dict:
-    site = fetch(target.website) if target.website else ""
+    has_real_site = bool(target.website) and not is_social_only(target.website)
+    site = fetch(target.website) if has_real_site else ""
     has_source = bool(site)
     caps = capability_summary(portfolio) if portfolio else ""
     prompt = RESEARCH_PROMPT.format(

@@ -1084,4 +1084,80 @@ the whole set. The no-website segment held at **8% phone (29/352)** — consiste
 
 **Result:** 278 tests green (244 → 278).
 
-<!-- Next session: append "## Phase 19 — ..." here. Do not edit sections above. -->
+## Phase 19 — What the Skills Found, and What the First Real Drafts Found (2026-07-29)
+
+**Manan's ask:** *"now i have made u lot of tools and skills access lets make it and use it."*
+
+Two skills were read in full (`cold-email`, `prospecting`) and audited against what we had built.
+Then the first real batch of drafts was generated and read line by line. The skills corrected the
+prompts; **reading the actual output found the bugs that mattered.**
+
+### What the cold-email skill corrected
+
+Three of our numbers were guessed, and two sat in measurably the wrong band:
+
+| | was | now | evidence |
+|---|---|---|---|
+| Subject length | 3-7 words | **2-4 words** | 2-word gets 60% more opens than 5-word; 2→4 already costs 17.5% of replies |
+| Body length | under 120 words | **40-75 words** | under 75 words = 83% more replies (25-75 is the band) |
+| Self-focus | no rule | **"you/your" must outnumber "I/we"** | ranked #2 mistake across campaigns |
+| The ask | "end with one question" | **no call/demo/meeting** | ranked #7 — "proposing on first date" |
+
+Also removed from subjects: numbers and percentages (−46% opens) and the business's own name, which
+reads as automation exactly like a merge-tagged first name (−12% replies). The old fallback,
+`"Quick question about {business}"`, led with the one thing the data says to leave out.
+
+The same audit **validated the follow-up schedule** — ours is 3/7/16/30 against a recommended
+3/7/14/21-28, with four follow-ups the documented cap. No change needed.
+
+### What the prospecting skill corrected
+
+Its local-SMB reference classifies businesses into four website states; we had two. Any business
+whose OSM `website` tag pointed at a Facebook page, Instagram profile, Linktree or `wa.me` link was
+treated as having a real site — **so our strongest segment got our weakest pitch**, since the
+researched angle is explicitly told not to offer to build a website. Fetching didn't catch it:
+facebook.com answers 200, so `has_source` came back True. Three call sites now agree on what a
+website is.
+
+### What only the real drafts could find
+
+**A block page is not their website.** Neither fetcher checked the status code, so a 403 or a
+Cloudflare challenge came back as site content. Live drafts told real businesses:
+
+> "Your website's 403 error is hiding your patient support info"
+> "You're currently using a Cloudflare challenge page"
+
+Every one of those sites was working. Opening a cold email by telling someone their site is broken
+ends the conversation on the first line. Both fetchers now treat any non-200 as no content.
+
+**And then the mirror image appeared.** With block pages no longer counting as content, businesses
+whose sites merely blocked us fell through to the no-website angle and were told *"You don't have a
+website"* — while running one. There are three states, not two: no site, a site we couldn't read, a
+site we read. **Only the first supports claiming an absence**, because only there is the absence a
+fact. `UNREADABLE_ANGLE` tells the model the site exists and that it has seen nothing on it, so it
+can neither deny the site nor describe it.
+
+**8 of 25 drafts (32%) carried one of those two false claims.** All regenerated.
+
+### What a real 125-call run found
+
+25 targets × ~5 LLM calls burst-fired: Gemini 429'd, the Groq fallback 429'd too, and the run died
+**losing every draft before the failure** — the commit sat after the loop. Two faults, both
+invisible at test volume:
+
+- The provider layer now waits and retries. Routing to the other provider isn't enough when the
+  burst itself caused the limit; both free tiers are per-minute, so time is the only cure. It
+  re-raises the provider's own error so a rate limit stays distinguishable from a bad key.
+- Engine B isolates each target and commits per draft. Nobody watches cron, so one bad target costs
+  one draft, not the morning. Verified live: a later run lost 3 targets to quota and still kept 2.
+
+**Free-tier daily quota is a real ceiling.** At ~5 calls per target it caps how many leads can be
+drafted per day — worth measuring before scaling the daily cap.
+
+### State
+
+**24 drafts in the review queue, 19 with a contact channel**, from real Austin businesses.
+
+**Result:** 301 tests green (278 → 301).
+
+<!-- Next session: append "## Phase 20 — ..." here. Do not edit sections above. -->

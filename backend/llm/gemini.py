@@ -1,3 +1,5 @@
+import time
+
 import httpx
 from google import genai
 
@@ -23,10 +25,27 @@ def _generate_groq(prompt: str, model: str = GROQ_FALLBACK_MODEL) -> str:
     return resp.json()["choices"][0]["message"]["content"]
 
 
-def generate(prompt: str, model: str = DEFAULT_MODEL) -> str:
-    """Gemini primary, Groq fallback — a Gemini error (rate limit, outage, bad
-    key) shouldn't take down message/proposal generation."""
-    try:
-        return _generate_gemini(prompt, model)
-    except Exception:
-        return _generate_groq(prompt)
+# A 25-target run makes ~125 calls in a burst. Measured: that 429'd Gemini, fell
+# through to Groq, and 429'd that too. Both free tiers are per-MINUTE limited, so
+# the only cure is to wait — routing to the other provider isn't enough when the
+# burst is what caused it.
+LLM_ATTEMPTS = 3
+BACKOFF_SECONDS = 20
+
+
+def generate(prompt: str, model: str = DEFAULT_MODEL, sleep=time.sleep) -> str:
+    """Gemini primary, Groq fallback, then wait and try again.
+
+    Raises the last provider error rather than a generic one — the caller needs
+    to tell a rate limit apart from a bad key.
+    """
+    last: Exception | None = None
+    for attempt in range(LLM_ATTEMPTS):
+        for call in (lambda: _generate_gemini(prompt, model), lambda: _generate_groq(prompt)):
+            try:
+                return call()
+            except Exception as exc:
+                last = exc
+        if attempt < LLM_ATTEMPTS - 1:
+            sleep(BACKOFF_SECONDS * (attempt + 1))
+    raise last

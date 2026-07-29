@@ -49,3 +49,37 @@ def test_generate_falls_back_to_groq_on_gemini_failure(monkeypatch):
     assert "groq.com" in called_url
     assert called_kwargs["headers"]["Authorization"] == "Bearer fake-groq-key"
     assert called_kwargs["json"]["messages"][0]["content"] == "prompt"
+
+
+def test_both_providers_rate_limited_is_retried_not_fatal():
+    """Measured on a real 25-target run: 125 calls in a burst 429'd Gemini, fell
+    through to Groq, and 429'd that too — killing the whole run. Both free tiers
+    are per-minute limited, so waiting is the only cure."""
+    calls = {"gemini": 0}
+    slept = []
+
+    def flaky_client(**kw):
+        calls["gemini"] += 1
+        if calls["gemini"] < 3:
+            raise RuntimeError("429 Too Many Requests")
+        fake = MagicMock()
+        fake.models.generate_content.return_value = MagicMock(text="finally")
+        return fake
+
+    with patch("backend.llm.gemini.genai.Client", side_effect=flaky_client):
+        with patch("backend.llm.gemini._generate_groq", side_effect=RuntimeError("429")):
+            out = gemini.generate("prompt", sleep=slept.append)
+
+    assert out == "finally"
+    assert slept, "must back off between attempts, not hammer the endpoint"
+
+
+def test_gives_up_with_the_real_error_after_the_last_attempt():
+    """The caller needs the provider's error, not a generic one, to tell a rate
+    limit apart from a bad key."""
+    import pytest
+
+    with patch("backend.llm.gemini.genai.Client", side_effect=RuntimeError("bad key")):
+        with patch("backend.llm.gemini._generate_groq", side_effect=RuntimeError("groq down")):
+            with pytest.raises(RuntimeError, match="groq down"):
+                gemini.generate("prompt", sleep=lambda s: None)

@@ -101,3 +101,29 @@ def test_no_lookup_when_there_is_nothing_to_look_up_or_it_is_already_known():
 
     assert calls == []
     db.close()
+
+
+def test_one_dead_target_does_not_lose_the_rest_of_the_run():
+    """A real 25-target run died on target N and lost every draft before it —
+    the commit was after the loop. Nobody is watching cron, so a single bad
+    target must cost one draft, not the morning."""
+    create_all(engine)
+    db = SessionLocal()
+    good = OutboundTarget(id="g6", name="Good", dedup_hash="gh6", raw="{}")
+    bad = OutboundTarget(id="g7", name="Bad", dedup_hash="gh7", raw="{}")
+    later = OutboundTarget(id="g8", name="Later", dedup_hash="gh8", raw="{}")
+    db.add_all([good, bad, later])
+    db.commit()
+
+    def explode_on_bad(target, research, projects):
+        if target.name == "Bad":
+            raise RuntimeError("429 Too Many Requests")
+        return {"draft_text": "Hi", "personalization_score": 7.0,
+                "portfolio_used": ["Site"], "subject": "s"}
+
+    out = run_engine_b([good, bad, later], db, _pf(), deps=_deps(write=explode_on_bad))
+
+    assert [m.target_id for m in out] == ["g6", "g8"]
+    assert db.query(OutreachMessage).filter(
+        OutreachMessage.target_id.in_(["g6", "g8"])).count() == 2
+    db.close()

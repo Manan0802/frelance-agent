@@ -72,6 +72,10 @@ def _default_fetch(url: str, _depth: int = 0) -> str:
     location = r.headers.get("location")
     if r.is_redirect and location:
         return _default_fetch(urljoin(url, location), _depth + 1)
+    # A block page carries no address of theirs — and any it does carry belongs
+    # to the blocker, not the business.
+    if r.status_code != 200:
+        return ""
     return r.text[:MAX_PAGE_BYTES]
 
 

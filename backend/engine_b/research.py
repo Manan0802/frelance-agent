@@ -44,6 +44,12 @@ def _default_fetch(url: str) -> str:
             follow_redirects=False,  # don't let redirects bypass the SSRF guard
             headers={"User-Agent": "FreelancingAgent/1.0"},
         )
+        # A block page is not their website. Without this check a 403 or a
+        # Cloudflare challenge came back as site content, and live drafts told
+        # real businesses "your website's 403 error is hiding your patient
+        # support info" — about sites that were working fine.
+        if r.status_code != 200:
+            return ""
         return r.text[:6000]
     except Exception:
         return ""

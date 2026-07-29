@@ -20,13 +20,21 @@ Email body:
 {draft}
 
 Rules:
-- 3 to 7 words. Lowercase unless a real name needs a capital.
-- Say what the email is actually about, drawn from the body.
+- 2 to 4 words. All lowercase.
+- It should look like it came from a colleague, not a vendor: name the topic
+  plainly ("new patients", "booking delays", "front desk time").
+- Draw it from the body — the topic, not a pitch.
+- No numbers and no percentages.
 - No exclamation marks, no ALL CAPS, no "Re:" or "Fwd:".
-- No hype words (unlock, boost, revolutionise, transform, supercharge).
-- It must not read like a mass email.
+- No salesy verbs (boost, increase, unlock, transform, supercharge, grow).
+- Do not put the business's name in it.
 
 Reply with ONLY the subject line."""
+
+# Last resort when the model returns nothing. Generic, and the data says generic
+# questions underperform specific ones — but an empty subject reads as automated
+# and a salesy one is worse. Two lowercase words is the safe floor.
+FALLBACK = "quick question"
 
 LABEL_RE = re.compile(r"^\W*(subject|betreff|objet)\s*:\s*", re.I)
 FAKE_THREAD_RE = re.compile(r"^\s*(re|fwd|fw)\s*:\s*", re.I)
@@ -54,5 +62,4 @@ def subject_for(draft: str, target, llm=generate) -> str:
         )
     except Exception:
         raw = ""
-    # An empty subject reads as automated — worse than a plain one.
-    return clean_subject(raw) or f"Quick question about {target.name}"
+    return clean_subject(raw) or FALLBACK

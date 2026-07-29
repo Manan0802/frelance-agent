@@ -55,13 +55,35 @@ def test_takes_only_the_first_line():
     assert clean_subject("your booking page\n\nHi there, I noticed...") == "your booking page"
 
 
-def test_falls_back_to_the_business_name_when_the_model_returns_nothing():
-    """An empty subject is worse than a plain one — it reads as automated."""
-    assert subject_for("body", Target(), llm=lambda p: "   ") == "Quick question about Riverside Dental"
+def test_asks_for_the_length_the_data_supports():
+    """2-word subjects get 60% more opens than 5-word ones, and going from 2 to 4
+    words costs 17.5% of replies (Lavender/Belkins, via the cold-email skill).
+    The earlier 3-7 word instruction was guessed and sat above that whole range."""
+    seen = {}
+    subject_for("body", Target(), llm=lambda p: seen.setdefault("p", p) and "x")
+    assert "2 to 4 words" in seen["p"]
+    assert "7 words" not in seen["p"]
+
+
+def test_forbids_the_things_that_measurably_lose_opens():
+    """Numbers and percentages cost 46% of opens; salesy verbs 17.9%."""
+    seen = {}
+    subject_for("body", Target(), llm=lambda p: seen.setdefault("p", p) and "x")
+    for rule in ("number", "colleague"):
+        assert rule in seen["p"].lower(), rule
+
+
+def test_the_fallback_carries_no_company_name():
+    """A company or first name in the subject signals automation — 12% fewer
+    replies. The old fallback led with the business name."""
+    out = subject_for("body", Target(), llm=lambda p: "   ")
+    assert "Riverside" not in out
+    assert len(out.split()) <= 3
+    assert out == out.lower()
 
 
 def test_an_llm_failure_does_not_lose_the_draft():
     def boom(prompt):
         raise RuntimeError("rate limited")
 
-    assert subject_for("body", Target(), llm=boom) == "Quick question about Riverside Dental"
+    assert subject_for("body", Target(), llm=boom)

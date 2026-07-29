@@ -87,3 +87,22 @@ def test_scorer_rubric_rejects_echoing_input_as_personalization():
     lowered = prompt.lower()
     assert "restat" in lowered or "echo" in lowered, "must exclude echoed input"
     assert "generic" in lowered, "must name the generic-template failure mode"
+
+
+def test_body_rules_follow_the_measured_cold_email_data():
+    """From the cold-email skill's benchmark data: under 75 words earns 83% more
+    replies (25-75 optimal), being self-focused is the #2 ranked mistake, and
+    asking for a call in a first touch is "proposing on first date". The old
+    120-word cap sat well above the useful range.
+
+    The floor matters as much as the cap — a bare cap once produced 11-word
+    telegrams (Phase 16).
+    """
+    from backend.engine_b.writer import RULES, NO_PROJECT_RULES
+
+    for rules in (RULES, NO_PROJECT_RULES):
+        assert "120 words" not in rules
+        assert "75 words" in rules
+        assert "40" in rules, "keep a floor, not a bare cap"
+        assert "your" in rules.lower() and "I/we" in rules
+        assert "call" in rules.lower()

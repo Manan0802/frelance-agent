@@ -2,18 +2,28 @@ from backend.llm.gemini import generate
 from backend.engine_b.humanize import ai_tells, HUMAN_RULES
 from backend.engine_b.subject import subject_for
 
+# Length, self-focus and the ask are all set from measured cold-email data rather
+# than taste: under 75 words earns 83% more replies (25-75 is the useful band),
+# being self-focused is the second-ranked mistake across campaigns, and asking
+# for a call on first contact is the seventh. The floor is deliberate — a bare
+# cap once produced 11-word telegrams (Phase 16).
+LENGTH_AND_ASK = """between 40 and 75 words; "you/your" must outnumber "I/we" — their situation,
+not your background; end by asking whether they want the specific thing you just proposed ("want me
+to sketch how that'd work?", "worth a look?") — NOT a rhetorical benefit question ("can you save
+time with automation?"), and never a call, demo or meeting; do NOT commit a price; confident peer
+tone, not sycophantic."""
+
 RULES = """Rules: start with the client's problem (never "Hi I am Manan"); reference one
 specific detail; mention one relevant past project; name the tech you'd use — use ONLY tech
 listed in that project's stack above, never invent a tool or framework that isn't listed;
-under 120 words; end with one question; do NOT commit a price; confident peer tone, not
-sycophantic.
+""" + LENGTH_AND_ASK + """
 
 """ + HUMAN_RULES
 
 NO_PROJECT_RULES = """Rules: start with the client's problem (never "Hi I am Manan"); reference one
 specific detail; DO NOT mention any past project and DO NOT NAME ANY SPECIFIC TECH, framework or
-tool — you have been given none, and naming one you can't back up loses the client; under 120
-words; end with one question; do NOT commit a price; confident peer tone, not sycophantic.
+tool — you have been given none, and naming one you can't back up loses the client;
+""" + LENGTH_AND_ASK + """
 
 """ + HUMAN_RULES
 

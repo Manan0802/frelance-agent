@@ -44,10 +44,13 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
   name in the subject. The follow-up schedule (3/7/16/30) was audited and **validated** — leave it.
 - **A block page is not their website, and "couldn't read it" is not "they don't have one."**
   Neither fetcher checked the status code, so a 403/Cloudflare challenge became site content and
-  live drafts told working businesses *"your website's 403 error is hiding your patient support
-  info"*. Fixing that exposed the mirror image. **Three states, not two** (`writer.angle_for`):
+  live drafts told real businesses *"your website's 403 error is hiding your patient support
+  info"*. **Re-measured 2026-08-08: all three of those sites 403 even to a browser User-Agent**
+  — so we could not tell a bot-block from a broken site, which is exactly why asserting either
+  was reckless. A failed fetch is never evidence about *their* site. Fixing that exposed the
+  mirror image. **Three states, not two** (`writer.angle_for`):
   no site / unreadable / read — **only the first supports claiming an absence**.
-  **8 of 25 drafts (32%) carried one of those false claims while 307 tests were green.**
+  **8 drafts out of 25 targets carried one of those false claims while 307 tests were green.**
 - **A Facebook page is not a website** — OSM's `website` tag is often a social page, which sent
   our strongest segment the researched angle (the one told *not* to offer a website).
 - **Volume breaks things tests never see:** 125 LLM calls in a burst 429'd Gemini *and* the Groq

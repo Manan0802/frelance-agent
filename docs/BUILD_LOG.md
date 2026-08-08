@@ -1127,7 +1127,10 @@ Cloudflare challenge came back as site content. Live drafts told real businesses
 > "Your website's 403 error is hiding your patient support info"
 > "You're currently using a Cloudflare challenge page"
 
-Every one of those sites was working. Opening a cold email by telling someone their site is broken
+Re-measured 2026-08-08: all three of those sites return 403 even to a browser User-Agent, so we
+could never tell a bot-block from a broken site — which is precisely why asserting either was
+reckless. A failed fetch says something about us, not about them. Opening a cold email by telling
+someone their site is broken
 ends the conversation on the first line. Both fetchers now treat any non-200 as no content.
 
 **And then the mirror image appeared.** With block pages no longer counting as content, businesses
@@ -1137,7 +1140,7 @@ site we read. **Only the first supports claiming an absence**, because only ther
 fact. `UNREADABLE_ANGLE` tells the model the site exists and that it has seen nothing on it, so it
 can neither deny the site nor describe it.
 
-**8 of 25 drafts (32%) carried one of those two false claims.** All regenerated.
+**8 drafts out of 25 targets carried one of those two false claims.** All regenerated.
 
 ### What a real 125-call run found
 

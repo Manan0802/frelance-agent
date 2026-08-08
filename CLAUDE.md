@@ -32,6 +32,31 @@ RemoteOK/WWR full-time listings) are **deprioritized** — only use their contra
 - **Phase 16 (follow-up sequencing) = COMPLETE.**
 - **Phase 17 (unattended Engine B + humanised copy) = COMPLETE.** 244 tests green.
 - **Phase 18 (delivery: contact + subject) = COMPLETE.** 278 tests green.
+- **Phase 19 (skill audit + what the first real drafts exposed) = COMPLETE.** 307 tests green.
+- **CURRENT BLOCKER IS NOT CODE.** 24 drafts sit in the queue, 19 with a contact channel, and
+  **none have been sent** (verified 2026-08-08 — status still `draft`, 0 CRM records). Nothing is
+  known about whether the pitch works. **Do not build more automation before a single reply
+  exists** — n8n/Camofox/Agentic Inbox are all queued behind that one fact.
+- **Outreach rules are set from measured data, not taste** (`cold-email` skill benchmarks):
+  subject **2-4 words** (2-word gets 60% more opens; 2→4 costs 17.5% of replies), body
+  **40-75 words** (under 75 = +83% replies), `you/your` must outnumber `I/we` (#2 ranked
+  mistake), and **never ask for a call/demo on first contact** (#7). No numbers, no business
+  name in the subject. The follow-up schedule (3/7/16/30) was audited and **validated** — leave it.
+- **A block page is not their website, and "couldn't read it" is not "they don't have one."**
+  Neither fetcher checked the status code, so a 403/Cloudflare challenge became site content and
+  live drafts told working businesses *"your website's 403 error is hiding your patient support
+  info"*. Fixing that exposed the mirror image. **Three states, not two** (`writer.angle_for`):
+  no site / unreadable / read — **only the first supports claiming an absence**.
+  **8 of 25 drafts (32%) carried one of those false claims while 307 tests were green.**
+- **A Facebook page is not a website** — OSM's `website` tag is often a social page, which sent
+  our strongest segment the researched angle (the one told *not* to offer a website).
+- **Volume breaks things tests never see:** 125 LLM calls in a burst 429'd Gemini *and* the Groq
+  fallback, and the run died losing every draft before it (commit was after the loop). Now
+  backoff retry + **per-target commit**.
+- **Run the dashboard under `pm2`, not a background shell** — a backgrounded server dies on
+  session teardown (happened three times). `pm2 start ... --name freea-dashboard && pm2 save`.
+- **Full handoff lives in the Obsidian vault** — `manan-memory/Projects/freea/` (8 notes).
+  Start any new session from `freea-open-threads`.
 - **Reachability, measured live (Austin, 608 businesses):** 256 have a website, 352 don't; only 60
   of 608 carry an OSM `email` tag. Probing 50 website-having rows → **34% email, 16% contact form,
   50% nothing** (20 of those 50% have a phone). So **~128 reachable leads from one city**. The

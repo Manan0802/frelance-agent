@@ -6,3 +6,7 @@ data/*.db
 .pytest_cache/
 *.egg-info/
 .chroma/
+
+# Local agent config — symlinks to the manan hub, not this project
+.mcp.json
+.claude
